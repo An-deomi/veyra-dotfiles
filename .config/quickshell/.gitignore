@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+*.bak
+*.before-*
+.DS_Store
+hotspot_backend.json

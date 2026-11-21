@@ -1,0 +1,13 @@
+-- Copy this file to userprefs.local.lua and customize the values.
+-- It is intentionally user-local and should not be committed.
+return {
+    keyboard_layout = "us",
+    keyboard_options = "",
+    cursor_theme = "Adwaita",
+    cursor_size = 24,
+
+    -- Monitors are managed in hypr/monitors.lua (Veyra Settings -> Display).
+    primary_monitor = "", -- e.g. "DP-1"; empty keeps workspaces monitor-agnostic.
+
+    use_uwsm = false, -- set true only when your session is managed by UWSM
+}

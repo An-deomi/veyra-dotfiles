@@ -1,0 +1,103 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "source": "cachyos_small",
+    "height": 11,
+    "padding": {
+      "top": 2
+    },
+    "color": {
+      "1": "{{colors.primary.default.hex}}",
+      "2": "{{colors.secondary.default.hex}}"
+    }
+  },
+  "display": {
+    "separator": " : ",
+    "color": {
+      "keys": "{{colors.primary.default.hex}}",
+      "title": "{{colors.secondary.default.hex}}",
+      "output": "{{colors.tertiary.default.hex}}",
+      "separator": "{{colors.secondary.default.hex}}"
+    },
+    "percent": {
+      "color": {
+        "green": "{{colors.tertiary.default.hex}}",
+        "yellow": "{{colors.primary.default.hex}}",
+        "red": "{{colors.secondary.default.hex}}"
+      }
+    }
+  },
+  "modules": [
+    {
+      "type": "custom",
+      "format": "                  󰌢  [ SYSTEM INFO ]",
+      "outputColor": "{{colors.primary.default.hex}}"
+    },
+    {
+      "type": "custom",
+      "format": "┌──────────────────────────────────────────────────┐",
+      "outputColor": "{{colors.primary.default.hex}}"
+    },
+    {
+      "type": "os",
+      "key": "    OS",
+      "keyColor": "{{colors.primary.default.hex}}"
+    },
+    {
+      "type": "packages",
+      "key": "  󰏗  Packages",
+      "keyColor": "{{colors.primary.default.hex}}"
+    },
+    {
+      "type": "wm",
+      "key": "    WM",
+      "keyColor": "{{colors.primary.default.hex}}"
+    },
+    {
+      "type": "terminal",
+      "key": "    Terminal",
+      "keyColor": "{{colors.primary.default.hex}}"
+    },
+    {
+      "type": "custom",
+      "format": "└──────────────────────────────────────────────────┘",
+      "outputColor": "{{colors.primary.default.hex}}"
+    },
+    "break",
+    {
+      "type": "title",
+      "key": "    User",
+      "keyColor": "{{colors.secondary.default.hex}}"
+    },
+    {
+      "type": "custom",
+      "format": "┌──────────────────────────────────────────────────┐",
+      "outputColor": "{{colors.secondary.default.hex}}"
+    },
+    {
+      "type": "cpu",
+      "format": "{1}",
+      "key": "    CPU",
+      "keyColor": "{{colors.secondary.default.hex}}"
+    },
+    {
+      "type": "memory",
+      "key": "  󰘚  Memory",
+      "keyColor": "{{colors.secondary.default.hex}}"
+    },
+    {
+      "type": "uptime",
+      "key": "  󰅐  Uptime",
+      "keyColor": "{{colors.secondary.default.hex}}"
+    },
+    {
+      "type": "custom",
+      "format": "└──────────────────────────────────────────────────┘",
+      "outputColor": "{{colors.secondary.default.hex}}"
+    },
+    {
+      "type": "custom",
+      "format": "               \u001b[30m󰊠  \u001b[31m󰊠  \u001b[32m󰊠  \u001b[33m󰊠  \u001b[34m󰊠  \u001b[35m󰊠  \u001b[36m󰊠  \u001b[37m󰊠  \u001b[0m"
+    }
+  ]
+}

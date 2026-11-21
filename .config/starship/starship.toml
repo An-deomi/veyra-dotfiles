@@ -1,0 +1,25 @@
+palette = "quickshell"
+add_newline = false
+format = "$directory$git_branch$git_status$cmd_duration$character"
+
+[directory]
+style = "bold accent"
+truncation_length = 3
+
+[git_branch]
+symbol = " "
+style = "bold accentcomplementary"
+
+[git_status]
+style = "accentcomplementary"
+
+[character]
+success_symbol = "[❯](bold accent)"
+error_symbol = "[❯](bold red)"
+
+# --- Quickshell Palette ---
+[palettes.quickshell]
+bg = "#090a0b"
+fg = "#f0f2f3"
+accent = "#65bdcc"
+accentcomplementary = "#646fcc"

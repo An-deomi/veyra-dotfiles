@@ -1,0 +1,18 @@
+{
+  "id": "foot",
+  "name": "Foot",
+  "origin": "https://github.com/noctalia-dev/noctalia/tree/main/assets/templates/foot",
+  "kind": "noctalia",
+  "entries": [
+    {
+      "name": "foot",
+      "input_paths": {
+        "default": "foot"
+      },
+      "output_paths": [
+        "$XDG_CONFIG_HOME/foot/themes/noctalia"
+      ],
+      "requires_path": ""
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "wifiInterface": "",
+  "internetInterface": "AUTO",
+  "ufwEgress": "",
+  "hotspotProfile": "VeyraHotspot"
+}

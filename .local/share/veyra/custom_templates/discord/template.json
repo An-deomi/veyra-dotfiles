@@ -1,0 +1,20 @@
+{
+  "id": "discord",
+  "name": "Discord / Vesktop",
+  "origin": "local:veyra-discord",
+  "kind": "noctalia",
+  "entries": [
+    {
+      "name": "discord",
+      "input_paths": {
+        "default": "veyra-discord.css"
+      },
+      "output_paths": [
+        "$XDG_CONFIG_HOME/vesktop/themes/veyra.theme.css",
+        "$XDG_CONFIG_HOME/Vencord/themes/veyra.theme.css",
+        "$XDG_CONFIG_HOME/BetterDiscord/themes/veyra.theme.css"
+      ],
+      "requires_path": ""
+    }
+  ]
+}

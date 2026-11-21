@@ -1,0 +1,7 @@
+[catalog.foot]
+name = "Foot"
+category = "terminal"
+
+[templates.foot]
+input_path = "foot"
+output_path = "$XDG_CONFIG_HOME/foot/themes/noctalia"
