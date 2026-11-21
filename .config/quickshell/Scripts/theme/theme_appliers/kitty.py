@@ -69,3 +69,88 @@ color21 {sanitize_color(accentComplementary)}
         f2.write(kitty_theme)
     # Reload running kitty instances without a shell string.
     subprocess.run(["pkill", "-USR1", "-x", "kitty"], check=False)
+
+    # Also broadcast OSC 4/10/11/12 palette updates to running Foot and other
+    # terminal emulator PTYs so open terminals recolor live on wallpaper change.
+    _broadcast_osc_palette(
+        fg=sanitize_color(fg),
+        bg=sanitize_color(bg),
+        cursor=sanitize_color(fg),
+        palette=[
+            sanitize_color(border),
+            sanitize_color(accentComplementary),
+            sanitize_color(accent),
+            sanitize_color(accentComplementary),
+            sanitize_color(accent),
+            sanitize_color(accentComplementary),
+            sanitize_color(accent),
+            sanitize_color(overlayBase),
+            sanitize_color(muted),
+            sanitize_color(accentComplementary),
+            sanitize_color(accent),
+            sanitize_color(accentComplementary),
+            sanitize_color(accent),
+            sanitize_color(accentComplementary),
+            sanitize_color(accent),
+            sanitize_color(fg),
+        ],
+    )
+
+
+_LIVE_OSC_TERMINALS = {"foot", "footclient", "alacritty", "wezterm-gui", "ghostty", "konsole"}
+
+
+def _is_terminal_pty(pts_path: str, uid: int) -> bool:
+    try:
+        st = os.stat(pts_path)
+    except OSError:
+        return False
+    if st.st_uid != uid:
+        return False
+    for entry in os.listdir("/proc"):
+        if not entry.isdigit():
+            continue
+        try:
+            if os.readlink(f"/proc/{entry}/fd/0") != pts_path:
+                continue
+            with open(f"/proc/{entry}/status", "r", encoding="utf-8", errors="ignore") as f:
+                ppid = ""
+                for line in f:
+                    if line.startswith("PPid:"):
+                        ppid = line.split(":", 1)[1].strip()
+                        break
+            if ppid:
+                with open(f"/proc/{ppid}/comm", "r", encoding="utf-8", errors="ignore") as f:
+                    if f.read().strip() in _LIVE_OSC_TERMINALS:
+                        return True
+        except OSError:
+            continue
+    return False
+
+
+def _broadcast_osc_palette(fg: str, bg: str, cursor: str, palette: list[str]) -> None:
+    if not os.path.isdir("/dev/pts"):
+        return
+    uid = os.getuid()
+    seq = f"\033]10;{fg}\033\\\033]11;{bg}\033\\\033]12;{cursor}\033\\"
+    for idx, color in enumerate(palette):
+        seq += f"\033]4;{idx};{color}\033\\"
+    payload = seq.encode("ascii", errors="ignore")
+    for name in os.listdir("/dev/pts"):
+        if not name.isdigit():
+            continue
+        pts_path = f"/dev/pts/{name}"
+        if not _is_terminal_pty(pts_path, uid):
+            continue
+        fd = -1
+        try:
+            fd = os.open(pts_path, os.O_WRONLY | os.O_NONBLOCK | os.O_NOCTTY)
+            os.write(fd, payload)
+        except OSError:
+            pass
+        finally:
+            if fd >= 0:
+                try:
+                    os.close(fd)
+                except OSError:
+                    pass

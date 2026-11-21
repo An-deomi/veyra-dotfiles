@@ -7,23 +7,23 @@
       "top": 2
     },
     "color": {
-      "1": "#65bdcc",
-      "2": "#646fcc"
+      "1": "cyan",
+      "2": "magenta"
     }
   },
   "display": {
     "separator": " : ",
     "color": {
-      "keys": "#65bdcc",
-      "title": "#646fcc",
-      "output": "#8fcdd8",
-      "separator": "#646fcc"
+      "keys": "cyan",
+      "title": "magenta",
+      "output": "white",
+      "separator": "magenta"
     },
     "percent": {
       "color": {
-        "green": "#8fcdd8",
-        "yellow": "#65bdcc",
-        "red": "#646fcc"
+        "green": "white",
+        "yellow": "cyan",
+        "red": "magenta"
       }
     }
   },
@@ -31,69 +31,69 @@
     {
       "type": "custom",
       "format": "                  󰌢  [ SYSTEM INFO ]",
-      "outputColor": "#65bdcc"
+      "outputColor": "cyan"
     },
     {
       "type": "custom",
       "format": "┌──────────────────────────────────────────────────┐",
-      "outputColor": "#65bdcc"
+      "outputColor": "cyan"
     },
     {
       "type": "os",
       "key": "    OS",
-      "keyColor": "#65bdcc"
+      "keyColor": "cyan"
     },
     {
       "type": "packages",
       "key": "  󰏗  Packages",
-      "keyColor": "#65bdcc"
+      "keyColor": "cyan"
     },
     {
       "type": "wm",
       "key": "    WM",
-      "keyColor": "#65bdcc"
+      "keyColor": "cyan"
     },
     {
       "type": "terminal",
       "key": "    Terminal",
-      "keyColor": "#65bdcc"
+      "keyColor": "cyan"
     },
     {
       "type": "custom",
       "format": "└──────────────────────────────────────────────────┘",
-      "outputColor": "#65bdcc"
+      "outputColor": "cyan"
     },
     "break",
     {
       "type": "title",
       "key": "    User",
-      "keyColor": "#646fcc"
+      "keyColor": "magenta"
     },
     {
       "type": "custom",
       "format": "┌──────────────────────────────────────────────────┐",
-      "outputColor": "#646fcc"
+      "outputColor": "magenta"
     },
     {
       "type": "cpu",
       "format": "{1}",
       "key": "    CPU",
-      "keyColor": "#646fcc"
+      "keyColor": "magenta"
     },
     {
       "type": "memory",
       "key": "  󰘚  Memory",
-      "keyColor": "#646fcc"
+      "keyColor": "magenta"
     },
     {
       "type": "uptime",
       "key": "  󰅐  Uptime",
-      "keyColor": "#646fcc"
+      "keyColor": "magenta"
     },
     {
       "type": "custom",
       "format": "└──────────────────────────────────────────────────┘",
-      "outputColor": "#646fcc"
+      "outputColor": "magenta"
     },
     {
       "type": "custom",

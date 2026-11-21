@@ -7,23 +7,23 @@
       "top": 2
     },
     "color": {
-      "1": "{{colors.primary.default.hex}}",
-      "2": "{{colors.secondary.default.hex}}"
+      "1": "cyan",
+      "2": "magenta"
     }
   },
   "display": {
     "separator": " : ",
     "color": {
-      "keys": "{{colors.primary.default.hex}}",
-      "title": "{{colors.secondary.default.hex}}",
-      "output": "{{colors.tertiary.default.hex}}",
-      "separator": "{{colors.secondary.default.hex}}"
+      "keys": "cyan",
+      "title": "magenta",
+      "output": "white",
+      "separator": "magenta"
     },
     "percent": {
       "color": {
-        "green": "{{colors.tertiary.default.hex}}",
-        "yellow": "{{colors.primary.default.hex}}",
-        "red": "{{colors.secondary.default.hex}}"
+        "green": "white",
+        "yellow": "cyan",
+        "red": "magenta"
       }
     }
   },
@@ -31,69 +31,69 @@
     {
       "type": "custom",
       "format": "                  󰌢  [ SYSTEM INFO ]",
-      "outputColor": "{{colors.primary.default.hex}}"
+      "outputColor": "cyan"
     },
     {
       "type": "custom",
       "format": "┌──────────────────────────────────────────────────┐",
-      "outputColor": "{{colors.primary.default.hex}}"
+      "outputColor": "cyan"
     },
     {
       "type": "os",
       "key": "    OS",
-      "keyColor": "{{colors.primary.default.hex}}"
+      "keyColor": "cyan"
     },
     {
       "type": "packages",
       "key": "  󰏗  Packages",
-      "keyColor": "{{colors.primary.default.hex}}"
+      "keyColor": "cyan"
     },
     {
       "type": "wm",
       "key": "    WM",
-      "keyColor": "{{colors.primary.default.hex}}"
+      "keyColor": "cyan"
     },
     {
       "type": "terminal",
       "key": "    Terminal",
-      "keyColor": "{{colors.primary.default.hex}}"
+      "keyColor": "cyan"
     },
     {
       "type": "custom",
       "format": "└──────────────────────────────────────────────────┘",
-      "outputColor": "{{colors.primary.default.hex}}"
+      "outputColor": "cyan"
     },
     "break",
     {
       "type": "title",
       "key": "    User",
-      "keyColor": "{{colors.secondary.default.hex}}"
+      "keyColor": "magenta"
     },
     {
       "type": "custom",
       "format": "┌──────────────────────────────────────────────────┐",
-      "outputColor": "{{colors.secondary.default.hex}}"
+      "outputColor": "magenta"
     },
     {
       "type": "cpu",
       "format": "{1}",
       "key": "    CPU",
-      "keyColor": "{{colors.secondary.default.hex}}"
+      "keyColor": "magenta"
     },
     {
       "type": "memory",
       "key": "  󰘚  Memory",
-      "keyColor": "{{colors.secondary.default.hex}}"
+      "keyColor": "magenta"
     },
     {
       "type": "uptime",
       "key": "  󰅐  Uptime",
-      "keyColor": "{{colors.secondary.default.hex}}"
+      "keyColor": "magenta"
     },
     {
       "type": "custom",
       "format": "└──────────────────────────────────────────────────┘",
-      "outputColor": "{{colors.secondary.default.hex}}"
+      "outputColor": "magenta"
     },
     {
       "type": "custom",

@@ -773,7 +773,7 @@ def token_color(role: str, colors: dict[str, Any]) -> str:
         "terminal_normal_blue": ("terminal_color4", "accent"),
         "terminal_normal_magenta": ("terminal_color5", "accentComplementary"),
         "terminal_normal_cyan": ("terminal_color6", "accent"),
-        "terminal_normal_white": ("terminal_color7", "fg"),
+        "terminal_normal_white": ("terminal_color7", "overlayBase"),
         "terminal_bright_black": ("terminal_color8", "muted"),
         "terminal_bright_red": ("terminal_color9", "accentComplementary"),
         "terminal_bright_green": ("terminal_color10", "accent"),
