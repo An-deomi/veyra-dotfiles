@@ -2,6 +2,24 @@
 
 A wallpaper-driven **Hyprland 0.57+ (Lua)** and **Quickshell** desktop rice (**Veyra**) for Arch Linux / CachyOS, built upon and customized from [**t4lentles5/minflair**](https://github.com/t4lentles5/minflair).
 
+<p align="center">
+  <img src="assets/screenshots/island-desktop.png" alt="Veyra Island Mode Desktop" width="100%" />
+</p>
+
+## Showcase
+
+| Convex Mode (Connected Bar & Bezel Frame) | Live Island Overview (`SUPER + Tab`) |
+| :---: | :---: |
+| <img src="assets/screenshots/convex-desktop.png" alt="Veyra Convex Mode" width="100%" /> | <img src="assets/screenshots/island-overview.png" alt="Veyra Island Overview" width="100%" /> |
+
+<details>
+<summary><b>More Previews (Dashboard & Quick-Note Pad)</b></summary>
+<br />
+<p align="center">
+  <img src="assets/screenshots/dashboard-quicknote.png" alt="Veyra Dashboard and Quick Note" width="680" />
+</p>
+</details>
+
 ## Highlights
 
 - **Adaptive Wallpaper Palette**: Extracts dark/light Material + accent palettes from your active wallpaper (`awww` + `matugen`) and updates Hyprland, Quickshell, Kitty, Fastfetch, Starship, GTK 3/4, Qt, Spicetify (`marketplace`), and Discord/Vesktop (`veyra.theme.css`).

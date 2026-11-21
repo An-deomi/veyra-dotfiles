@@ -15,8 +15,8 @@ local veyraPrefs = require("veyra_prefs")
 hl.config({
 	general = {
 		gaps_in = 3,
-		gaps_out = 5,
-		border_size = 3,
+		gaps_out = 2,
+		border_size = 4,
 		["col.active_border"] = colors.accent_alpha,
 		["col.inactive_border"] = colors.border_alpha,
 		allow_tearing = true, -- only applies to windows that request it (games)
@@ -37,12 +37,12 @@ hl.config({
 		},
 	},
 	decoration = {
-		rounding = 18,
+		rounding = 26,
 		rounding_power = 2,
 		active_opacity = 1,
 		inactive_opacity = 1,
 		blur = {
-			enabled = false,
+			enabled = true,
 			size = 6,
 			passes = 1,
 			new_optimizations = true,
@@ -59,7 +59,7 @@ hl.config({
 			special = false,
 		},
 		shadow = {
-			enabled = true,
+			enabled = false,
 			range = 11,
 			render_power = 4,
 			color = colors.shadow,
