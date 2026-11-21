@@ -1,11 +1,12 @@
 # Veyra Dotfiles
 
-A wallpaper-driven **Hyprland 0.57+ (Lua)** and **Quickshell** desktop rice (**Veyra**), built upon and customized from **MinFlair**.
+A wallpaper-driven **Hyprland 0.57+ (Lua)** and **Quickshell** desktop rice (**Veyra**) for Arch Linux / CachyOS, built upon and customized from [**t4lentles5/minflair**](https://github.com/t4lentles5/minflair).
 
 ## Highlights
 
 - **Adaptive Wallpaper Palette**: Extracts dark/light Material + accent palettes from your active wallpaper (`awww` + `matugen`) and updates Hyprland, Quickshell, Kitty, Fastfetch, Starship, GTK 3/4, Qt, Spicetify (`marketplace`), and Discord/Vesktop (`veyra.theme.css`).
 - **Dynamic Island, Convex & Gaming Bar Styles**:
+  - **Rotating Two-Color Gradient Borders** (`Theme.accent` ↔ `Theme.accentComplementary`) on Island capsules, expanded Island popups, and the connected Convex bar + screen frame bezel.
   - Live **Island Overview** (`SUPER + Tab`) with `ScreencopyView` window thumbnails per workspace and an inline system tray.
   - **Focus / Pomodoro Timer** (`25m Focus`, `5m Break`, `15m Long`) inside the Island Clock popup.
   - **Quick-Note Pad** inside the Dashboard (`CTRL + ALT + D`) with auto-save and one-click copy.
@@ -99,9 +100,9 @@ python3 ~/.config/quickshell/Scripts/theme/apply_theme.py
 
 ## Credits
 
-- Based on **MinFlair** — thank you to the MinFlair contributors for the original Hyprland + Quickshell foundation.
-- Modified, extended, and maintained as **Veyra** by **andeomi**.
+- Based on [**MinFlair**](https://github.com/t4lentles5/minflair) by [**@t4lentles5**](https://github.com/t4lentles5) — thank you for the original modular Hyprland + Quickshell foundation.
+- Modified, extended, and maintained as **Veyra** by [**@An-deomi**](https://github.com/An-deomi).
 
 ## License
 
-MIT License — see [LICENSE](LICENSE).
+GNU General Public License v3.0 (GPL-3.0) — see [LICENSE](LICENSE), matching upstream [t4lentles5/minflair](https://github.com/t4lentles5/minflair).
