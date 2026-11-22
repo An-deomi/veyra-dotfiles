@@ -79,6 +79,21 @@ Item {
             AppState.closeAllWidgets();
     }
 
+    function focusCurrentItem() {
+        if (!root.isOpen || !loader.item)
+            return ;
+
+        let target = loader.item.initialFocusItem;
+        if (target) {
+            if (target.textField)
+                target.textField.forceActiveFocus();
+            else
+                target.forceActiveFocus();
+        } else if (typeof loader.item.forceActiveFocus === "function") {
+            loader.item.forceActiveFocus();
+        }
+    }
+
     function activateCurrentItem() {
         if (!loader.item)
             return ;
@@ -101,14 +116,8 @@ Item {
         if (typeof loader.item.resetScreenCapture === "function")
             loader.item.resetScreenCapture();
 
-        Qt.callLater(() => {
-            if (loader.item) {
-                if (loader.item.initialFocusItem)
-                    loader.item.initialFocusItem.forceActiveFocus();
-                else if (typeof loader.item.forceActiveFocus === "function")
-                    loader.item.forceActiveFocus();
-            }
-        });
+        Qt.callLater(root.focusCurrentItem);
+        focusTimer.restart();
     }
 
     width: Math.round(smoothWidth)
@@ -154,6 +163,25 @@ Item {
     }
 
     Timer {
+        id: focusTimer
+
+        interval: 35
+        repeat: false
+        onTriggered: {
+            root.focusCurrentItem();
+            focusRetryTimer.restart();
+        }
+    }
+
+    Timer {
+        id: focusRetryTimer
+
+        interval: 110
+        repeat: false
+        onTriggered: root.focusCurrentItem()
+    }
+
+    Timer {
         id: contentFadeTimer
 
         interval: 35
@@ -188,7 +216,12 @@ Item {
         clip: true
         width: Math.round(currentWidth)
         height: Math.round(currentHeight)
-        Keys.forwardTo: (loader.item && loader.item.initialFocusItem) ? [loader.item.initialFocusItem] : []
+        Keys.forwardTo: {
+            if (!loader.item || !loader.item.initialFocusItem)
+                return [];
+            let target = loader.item.initialFocusItem;
+            return target.textField ? [target.textField, target] : [target];
+        }
         Keys.enabled: root.isOpen
         Keys.onEscapePressed: {
             root.close();

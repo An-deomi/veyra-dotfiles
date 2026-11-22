@@ -23,7 +23,7 @@ PanelWindow {
     property bool hasFullscreen: (Hyprland.focusedWorkspace && Hyprland.focusedWorkspace.hasFullscreen) ? HyprlandService.isTrueFullscreen : false
     property real fsTransitionProg: hasFullscreen ? 0 : 1
     readonly property var convexPanels: convexPanelsLoader.item
-    readonly property bool needsFocus: (AppState.isFocusWidgetOpen && convexPanels && convexPanels.hasAnyDrawerOpen) || AppState.textInputActive
+    readonly property bool needsFocus: !AppState.polkitAuthActive && (((convexPanels && (convexPanels.hasAnyPanelOpen || convexPanels.isConvexCenterOpen)) || AppState.textInputActive))
 
     function triggerStyleSwitch() {
         root.activeBarStyle = SettingsService.barStyle;
@@ -106,6 +106,8 @@ PanelWindow {
         id: unifiedShadowGroup
 
         anchors.fill: parent
+        focus: root.needsFocus
+        Keys.onEscapePressed: AppState.closeAllWidgets()
         opacity: root.isConvexMode ? 1 : 0
         layer.enabled: SettingsService.convexShadowEnabled && HyprlandService.hyprShadow && !DisplayProfileService.gameModeActive && (SystemInfoService.effectivePowerProfile !== "power-saver")
 

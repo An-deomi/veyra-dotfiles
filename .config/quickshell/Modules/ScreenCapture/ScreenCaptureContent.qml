@@ -134,6 +134,7 @@ Item {
                 root.hideWidget();
             }
         }
+        onEscapePressed: root.hideWidget()
     }
 
 }

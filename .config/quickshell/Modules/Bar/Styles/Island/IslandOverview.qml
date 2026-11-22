@@ -15,6 +15,9 @@ Item {
     id: root
 
     property var widget: null
+    property alias initialFocusItem: root
+    property int selectedWsIndex: 0
+    property int selectedAppIndex: -1
     readonly property int trayColumnWidth: 176
     readonly property int activeWsId: Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : 1
     readonly property var workspaceModel: {
@@ -101,9 +104,88 @@ Item {
         closeSelf();
     }
 
+    function syncSelectionToActive() {
+        const list = root.workspaceModel || [];
+        for (let i = 0; i < list.length; i++) {
+            if (list[i].active) {
+                root.selectedWsIndex = i;
+                root.selectedAppIndex = list[i].apps.length > 0 ? 0 : -1;
+                return;
+            }
+        }
+        root.selectedWsIndex = 0;
+        root.selectedAppIndex = (list.length > 0 && list[0].apps.length > 0) ? 0 : -1;
+    }
+
+    function stepWorkspace(delta) {
+        const list = root.workspaceModel || [];
+        if (list.length === 0)
+            return;
+        const nextWs = (root.selectedWsIndex + delta + list.length) % list.length;
+        root.selectedWsIndex = nextWs;
+        root.selectedAppIndex = list[nextWs].apps.length > 0 ? 0 : -1;
+    }
+
+    function stepItem(delta) {
+        const list = root.workspaceModel || [];
+        if (list.length === 0)
+            return;
+        const wsIdx = Math.max(0, Math.min(root.selectedWsIndex, list.length - 1));
+        const apps = list[wsIdx].apps || [];
+        if (apps.length > 0) {
+            const nextApp = root.selectedAppIndex + delta;
+            if (nextApp >= 0 && nextApp < apps.length) {
+                root.selectedAppIndex = nextApp;
+                return;
+            }
+        }
+        const nextWs = (wsIdx + delta + list.length) % list.length;
+        root.selectedWsIndex = nextWs;
+        const nextApps = list[nextWs].apps || [];
+        root.selectedAppIndex = nextApps.length > 0 ? (delta > 0 ? 0 : nextApps.length - 1) : -1;
+    }
+
+    function activateSelected() {
+        const list = root.workspaceModel || [];
+        if (list.length === 0)
+            return;
+        const wsIdx = Math.max(0, Math.min(root.selectedWsIndex, list.length - 1));
+        const ws = list[wsIdx];
+        if (root.selectedAppIndex >= 0 && root.selectedAppIndex < ws.apps.length)
+            root.focusWindow(ws.apps[root.selectedAppIndex].address);
+        else
+            root.focusWorkspace(ws.id);
+    }
+
     implicitWidth: 680
     implicitHeight: Math.max(wsColumn.implicitHeight, trayColumn.implicitHeight)
-    Component.onCompleted: Hyprland.refreshToplevels()
+    focus: true
+    Component.onCompleted: {
+        Hyprland.refreshToplevels();
+        syncSelectionToActive();
+        root.forceActiveFocus();
+    }
+    Keys.onPressed: function(event) {
+        if (event.key === Qt.Key_Down) {
+            root.stepWorkspace(1);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Up) {
+            root.stepWorkspace(-1);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Right || event.key === Qt.Key_Tab) {
+            root.stepItem(1);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Backtab) {
+            root.stepItem(-1);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) {
+            root.activateSelected();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Escape) {
+            root.closeSelf();
+            event.accepted = true;
+        }
+    }
 
     RowLayout {
         anchors.fill: parent
@@ -134,13 +216,15 @@ Item {
                     id: wsRow
 
                     required property var modelData
+                    required property int index
+                    readonly property bool isSelectedRow: root.selectedWsIndex === index
 
                     Layout.fillWidth: true
                     Layout.preferredHeight: modelData.apps.length > 0 ? 84 : 40
                     radius: Constants.sizeSm
-                    color: modelData.active ? Chrome.accentTint : (wsHover.hovered ? Theme.bgSecondary : "transparent")
-                    border.width: modelData.active ? 1 : 0
-                    border.color: Chrome.accentTintStrong
+                    color: (modelData.active || isSelectedRow) ? Chrome.accentTint : (wsHover.hovered ? Theme.bgSecondary : "transparent")
+                    border.width: isSelectedRow ? 1.5 : (modelData.active ? 1 : 0)
+                    border.color: isSelectedRow ? Theme.accent : Chrome.accentTintStrong
 
                     HoverHandler {
                         id: wsHover
@@ -184,15 +268,17 @@ Item {
                                     id: appChip
 
                                     required property var modelData
+                                    required property int index
+                                    readonly property bool isSelectedApp: wsRow.isSelectedRow && root.selectedAppIndex === index
 
                                     width: 116
                                     height: 70
                                     radius: Constants.sizeXs
                                     color: Theme.bgSecondary
-                                    border.width: appHover.hovered ? 1 : 0
+                                    border.width: (appHover.hovered || isSelectedApp) ? 1.5 : 0
                                     border.color: Theme.accent
                                     clip: true
-                                    scale: appHover.hovered ? 1.03 : 1
+                                    scale: (appHover.hovered || isSelectedApp) ? 1.03 : 1
 
                                     Rectangle {
                                         anchors.left: parent.left

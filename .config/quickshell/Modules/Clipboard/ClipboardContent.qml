@@ -425,11 +425,13 @@ Item {
             }
             customSize: Constants.sizeMd
             textField.Keys.onPressed: function(event) {
-                if (event.key === Qt.Key_Down) {
-                    clipboardView.currentIndex = Math.min(clipboardView.currentIndex + 1, ClipboardService.filteredModel.count - 1);
+                if (event.key === Qt.Key_Down || event.key === Qt.Key_Tab) {
+                    if (ClipboardService.filteredModel.count > 0)
+                        clipboardView.currentIndex = (clipboardView.currentIndex + 1) % ClipboardService.filteredModel.count;
                     event.accepted = true;
-                } else if (event.key === Qt.Key_Up) {
-                    clipboardView.currentIndex = Math.max(clipboardView.currentIndex - 1, 0);
+                } else if (event.key === Qt.Key_Up || event.key === Qt.Key_Backtab) {
+                    if (ClipboardService.filteredModel.count > 0)
+                        clipboardView.currentIndex = (clipboardView.currentIndex - 1 + ClipboardService.filteredModel.count) % ClipboardService.filteredModel.count;
                     event.accepted = true;
                 } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                     let idx = clipboardView.currentIndex >= 0 ? clipboardView.currentIndex : 0;

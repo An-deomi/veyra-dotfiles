@@ -353,22 +353,22 @@ Item {
 
     function handleKeyPress(event, fromSearch) {
         let currentDelegate = appsView.currentItem;
-        if (event.key === Qt.Key_Down) {
+        if (event.key === Qt.Key_Down || event.key === Qt.Key_Tab) {
             if (currentDelegate && currentDelegate.isExpanded && currentDelegate.currentActionIndex < currentDelegate.actionCount - 1) {
                 currentDelegate.currentActionIndex++;
                 event.accepted = true;
             } else if (appsView.count > 0) {
                 appsView.expandedIndex = -1;
-                appsView.currentIndex = Math.min(appsView.count - 1, appsView.currentIndex + 1);
+                appsView.currentIndex = (appsView.currentIndex + 1) % appsView.count;
                 event.accepted = true;
             }
-        } else if (event.key === Qt.Key_Up) {
+        } else if (event.key === Qt.Key_Up || event.key === Qt.Key_Backtab) {
             if (currentDelegate && currentDelegate.isExpanded && currentDelegate.currentActionIndex >= 0) {
                 currentDelegate.currentActionIndex--;
                 event.accepted = true;
             } else if (appsView.count > 0) {
                 appsView.expandedIndex = -1;
-                appsView.currentIndex = Math.max(0, appsView.currentIndex - 1);
+                appsView.currentIndex = (appsView.currentIndex - 1 + appsView.count) % appsView.count;
                 event.accepted = true;
             }
         } else if (event.key === Qt.Key_Right) {

@@ -10,6 +10,7 @@ ListView {
     property var actionModel: []
 
     signal actionTriggered(int index)
+    signal escapePressed()
 
     Layout.alignment: Qt.AlignHCenter
     Layout.preferredWidth: 64 * actionModel.length
@@ -26,18 +27,19 @@ ListView {
     highlightFollowsCurrentItem: true
     highlightMoveDuration: Constants.animNormal
     Keys.onPressed: function(event) {
-        if (event.key === Qt.Key_Right) {
-            if (currentIndex + 1 < actionModel.length) {
-                currentIndex++;
-                event.accepted = true;
-            }
-        } else if (event.key === Qt.Key_Left) {
-            if (currentIndex - 1 >= 0) {
-                currentIndex--;
-                event.accepted = true;
-            }
+        if (actionModel.length === 0)
+            return ;
+        if (event.key === Qt.Key_Right || event.key === Qt.Key_Down || event.key === Qt.Key_Tab) {
+            currentIndex = (currentIndex + 1) % actionModel.length;
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Up || event.key === Qt.Key_Backtab) {
+            currentIndex = (currentIndex - 1 + actionModel.length) % actionModel.length;
+            event.accepted = true;
         } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) {
             root.actionTriggered(currentIndex);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Escape) {
+            root.escapePressed();
             event.accepted = true;
         }
     }

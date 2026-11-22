@@ -9,7 +9,7 @@ if useUwsm == nil then
     useUwsm = os.getenv("VEYRA_USE_UWSM") == "1"
 end
 local launchPrefix = useUwsm and "uwsm app -- " or ""
-local exitSessionCommand = useUwsm and "uwsm stop" or "hyprctl dispatch exit"
+local exitSessionCommand = useUwsm and "uwsm stop" or "hyprctl eval 'hl.dsp.exit()'"
 local calculator = "gnome-calculator"
 local NUM_WORKSPACES = 10
 local home = os.getenv("HOME") or ""

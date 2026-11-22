@@ -58,11 +58,13 @@ Item {
     }
 
     function handleKey(event) {
-        if (event.key === Qt.Key_Right) {
-            root.selectIndex(wallView.currentIndex + 1);
+        if (event.key === Qt.Key_Right || event.key === Qt.Key_Tab) {
+            if (filteredModel.count > 0)
+                root.selectIndex((wallView.currentIndex + 1) % filteredModel.count);
             event.accepted = true;
-        } else if (event.key === Qt.Key_Left) {
-            root.selectIndex(wallView.currentIndex - 1);
+        } else if (event.key === Qt.Key_Left || event.key === Qt.Key_Backtab) {
+            if (filteredModel.count > 0)
+                root.selectIndex((wallView.currentIndex - 1 + filteredModel.count) % filteredModel.count);
             event.accepted = true;
         } else if (event.key === Qt.Key_Down || event.key === Qt.Key_PageDown) {
             root.selectIndex(wallView.currentIndex + 4);

@@ -29,7 +29,7 @@ Item {
         "id": "logout",
         "label": "Logout",
         "icon": "logout",
-        "command": ["hyprctl", "dispatch", "exit"],
+        "command": ["sh", "-c", "uwsm check is-active >/dev/null 2>&1 && uwsm stop || hyprctl eval 'hl.dsp.exit()' || loginctl terminate-session \"$XDG_SESSION_ID\""],
         "confirm": true
     }, {
         "id": "reboot",
@@ -45,7 +45,7 @@ Item {
         "confirm": true
     }]
     property int pendingActionIndex: -1
-    property alias initialFocusItem: menuView
+    readonly property var initialFocusItem: pendingActionIndex === -1 ? menuView : confirmMenu
     readonly property int buttonWidth: 64
     readonly property int buttonHeight: Constants.size5Xl
 
@@ -110,6 +110,7 @@ Item {
         onActionTriggered: (index) => {
             root.runAction(index);
         }
+        onEscapePressed: root.closeWidget()
 
         Behavior on opacity {
             NumberAnimation {
@@ -170,6 +171,7 @@ Item {
                     root.pendingActionIndex = -1;
                 }
             }
+            onEscapePressed: root.pendingActionIndex = -1
         }
 
         Behavior on opacity {
