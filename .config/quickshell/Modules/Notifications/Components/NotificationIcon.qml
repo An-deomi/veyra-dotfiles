@@ -11,8 +11,30 @@ Item {
     property int iconSize: Constants.size3Xl
     property color iconColor: Theme.accent
     property color bgColor: Theme.bgSecondary
-    property bool hasAppIcon: (notifData && notifData.appIcon && notifData.appIcon !== "") || (notifData && notifData.image)
+    property bool primaryImageFailed: false
+    readonly property string primaryImageSource: (notifData && notifData.image && !primaryImageFailed) ? String(notifData.image) : ""
+    readonly property string fallbackAppIconSource: {
+        if (!notifData || !notifData.appIcon || notifData.appIcon === "")
+            return "";
+        if (notifData.appIcon.startsWith("file://"))
+            return notifData.appIcon;
+        if (notifData.appIcon.startsWith("/"))
+            return "file://" + notifData.appIcon;
+        return "image://icon/" + notifData.appIcon;
+    }
+    readonly property string resolvedImageSource: primaryImageSource !== "" ? primaryImageSource : fallbackAppIconSource
+    property bool hasAppIcon: resolvedImageSource !== "" && appImage.status !== Image.Error
     property bool isUrgencyIcon: !hasAppIcon
+
+    onNotifDataChanged: primaryImageFailed = false
+
+    Connections {
+        target: root.notifData ? root.notifData : null
+        ignoreUnknownSignals: true
+        function onImageChanged() {
+            root.primaryImageFailed = false;
+        }
+    }
 
     function getUrgencyIcon() {
         if (!notifData)
@@ -52,23 +74,10 @@ Item {
             anchors.fill: parent
             fillMode: Image.PreserveAspectCrop
             horizontalAlignment: Image.AlignLeft
-            source: {
-                if (!root.notifData)
-                    return "";
-
-                if (root.notifData.image)
-                    return root.notifData.image;
-
-                if (root.notifData.appIcon && root.notifData.appIcon !== "") {
-                    if (root.notifData.appIcon.startsWith("file://"))
-                        return root.notifData.appIcon;
-
-                    if (root.notifData.appIcon.startsWith("/"))
-                        return "file://" + root.notifData.appIcon;
-
-                    return "image://icon/" + root.notifData.appIcon;
-                }
-                return "";
+            source: root.resolvedImageSource
+            onStatusChanged: {
+                if (status === Image.Error && root.primaryImageSource !== "")
+                    root.primaryImageFailed = true;
             }
             sourceSize: Qt.size(root.width > 0 ? root.width : root.iconSize, root.height > 0 ? root.height : root.iconSize)
             layer.enabled: true

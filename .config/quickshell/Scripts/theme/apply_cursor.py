@@ -2,8 +2,11 @@
 import sys
 sys.dont_write_bytecode = True
 
+import shutil
 import subprocess
 from pathlib import Path
+
+from xdg_paths import is_live_session
 
 def main():
     if len(sys.argv) < 3:
@@ -24,15 +27,19 @@ def main():
         sys.exit(1)
 
     home = Path.home()
+    live = is_live_session(home)
 
-    subprocess.run(
-        ["gsettings", "set", "org.gnome.desktop.interface", "cursor-theme", theme_name],
-        capture_output=True,
-    )
-    subprocess.run(
-        ["gsettings", "set", "org.gnome.desktop.interface", "cursor-size", str(size)],
-        capture_output=True,
-    )
+    if live and shutil.which("gsettings"):
+        subprocess.run(
+            ["gsettings", "set", "org.gnome.desktop.interface", "cursor-theme", theme_name],
+            capture_output=True,
+            check=False,
+        )
+        subprocess.run(
+            ["gsettings", "set", "org.gnome.desktop.interface", "cursor-size", str(size)],
+            capture_output=True,
+            check=False,
+        )
 
     icons_dir = home / ".icons" / "default"
     icons_dir.mkdir(parents=True, exist_ok=True)
@@ -52,12 +59,13 @@ def main():
         check=True,
     )
 
-    result = subprocess.run(
-        ["hyprctl", "setcursor", theme_name, str(size)],
-        capture_output=True, text=True,
-    )
-    if result.returncode:
-        print(f"Warning: hyprctl setcursor failed: {result.stderr.strip()}", file=sys.stderr)
+    if live and shutil.which("hyprctl"):
+        result = subprocess.run(
+            ["hyprctl", "setcursor", theme_name, str(size)],
+            capture_output=True, text=True, check=False,
+        )
+        if result.returncode:
+            print(f"Warning: hyprctl setcursor failed: {result.stderr.strip()}", file=sys.stderr)
 
 if __name__ == "__main__":
     main()

@@ -58,10 +58,17 @@ play_sound() {
 
 copy_and_notify() {
   if [ -f "$FILENAME" ]; then
-    wl-copy <"$FILENAME"
+    if command -v wl-copy &>/dev/null; then
+      wl-copy <"$FILENAME"
+    fi
     play_sound
   fi
 }
+
+if ! command -v grim &>/dev/null; then
+  notify-send -u critical "Screenshot failed" "grim is not installed." 2>/dev/null || true
+  exit 1
+fi
 
 take_screenshot() {
   local target_mode="$1"
@@ -153,24 +160,41 @@ case "$MODE" in
   ;;
 
 "clipboard")
+  command -v slurp &>/dev/null || { notify-send -u critical "Screenshot failed" "slurp is not installed." 2>/dev/null || true; exit 1; }
   geom=$(slurp -d 2>/dev/null)
   if [ -n "$geom" ]; then
     sleep 0.2
-    grim "${GRIM_CURSOR_ARGS[@]}" -g "$geom" - | wl-copy --type image/png
-    play_sound
+    if command -v wl-copy &>/dev/null; then
+      grim "${GRIM_CURSOR_ARGS[@]}" -g "$geom" - | wl-copy --type image/png
+      play_sound
+    fi
   fi
   ;;
 
 "ocr")
+  if ! command -v slurp &>/dev/null || ! command -v tesseract &>/dev/null; then
+    notify-send -u critical "OCR failed" "Install slurp and tesseract first." 2>/dev/null || true
+    exit 1
+  fi
   geom=$(slurp -d 2>/dev/null)
   if [ -n "$geom" ]; then
     sleep 0.2
     temp_ocr=$(mktemp "${XDG_RUNTIME_DIR:-/tmp}/veyra-ocr-XXXXXX.png")
     grim "${GRIM_CURSOR_ARGS[@]}" -g "$geom" "$temp_ocr" 2>/dev/null
     if [ -f "$temp_ocr" ]; then
-      tesseract "$temp_ocr" stdout -l eng+ara 2>/dev/null | wl-copy
-      notify-send -r 699 "Screenshot" "Text extracted and copied to clipboard" 2>/dev/null || true
-      play_sound
+      ocr_langs="eng"
+      if tesseract --list-langs 2>/dev/null | grep -qx "ara"; then
+        ocr_langs="eng+ara"
+      fi
+      if ocr_text=$(tesseract "$temp_ocr" stdout -l "$ocr_langs" 2>/dev/null || tesseract "$temp_ocr" stdout 2>/dev/null); then
+        if command -v wl-copy &>/dev/null; then
+          printf '%s' "$ocr_text" | wl-copy
+        fi
+        notify-send -r 699 "Screenshot" "Text extracted and copied to clipboard" 2>/dev/null || true
+        play_sound
+      else
+        notify-send -u critical "OCR failed" "Could not extract text (check tesseract language data)." 2>/dev/null || true
+      fi
     fi
     rm -f "$temp_ocr"
   fi

@@ -1,8 +1,9 @@
 import os
-
-from xdg_paths import config_home
+import re
 
 from color_utils import sanitize_color
+from theme_appliers.file_utils import atomic_write_text
+from xdg_paths import config_home
 
 
 def apply(home, colors):
@@ -59,11 +60,19 @@ theme[upload_end]="{sanitize_color(accentComplementary)}"
 """
     btop_theme_dir = os.path.join(str(config_home(home)), "btop", "themes")
     os.makedirs(btop_theme_dir, exist_ok=True)
-    with open(os.path.join(btop_theme_dir, "quickshell.theme"), "w") as f2:
-        f2.write(btop_theme)
+    atomic_write_text(os.path.join(btop_theme_dir, "quickshell.theme"), btop_theme)
 
     btop_conf = os.path.join(str(config_home(home)), "btop", "btop.conf")
-    if os.path.exists(btop_conf):
-        os.system(
-            f"sed -i 's/^color_theme = .*/color_theme = \"quickshell\"/' '{btop_conf}'"
-        )
+    if os.path.isfile(btop_conf) and not os.path.islink(btop_conf):
+        try:
+            with open(btop_conf, "r", encoding="utf-8") as handle:
+                content = handle.read()
+            updated, count = re.subn(
+                r'(?m)^color_theme\s*=\s*.*$',
+                'color_theme = "quickshell"',
+                content,
+            )
+            if count and updated != content:
+                atomic_write_text(btop_conf, updated)
+        except OSError:
+            pass

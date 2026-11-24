@@ -3,17 +3,11 @@ import sys
 
 sys.dont_write_bytecode = True
 
-import json
+import os
+import runpy
 
-import emoji
+HERE = os.path.dirname(os.path.abspath(__file__))
+SHARED_SCRIPT = os.path.normpath(os.path.join(HERE, "..", "..", "..", "emoji", "get_emoji.py"))
 
-out = []
-for ch, d in emoji.EMOJI_DATA.items():
-    if d.get("status") != emoji.STATUS["fully_qualified"]:
-        continue
-    names = [n.strip(":").lower() for n in [d.get("en", "")] + list(d.get("alias", []))]
-    if not names[0] or "skin_tone" in names[0]:
-        continue
-    out.append({"e": ch, "n": names[0], "a": names[1:]})
-
-print(json.dumps(out))
+if __name__ == "__main__":
+    runpy.run_path(SHARED_SCRIPT, run_name="__main__")

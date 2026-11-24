@@ -7,10 +7,13 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
-from xdg_paths import config_home, data_home, cache_home, state_home
+sys.dont_write_bytecode = True
+
+from xdg_paths import config_home, data_home, cache_home, is_live_session, state_home
 
 PLACEHOLDER = re.compile(r"\{\{\s*colors\.([A-Za-z0-9_]+)\.(default|dark|light)\.(hex_stripped|hex)\s*\}\}")
 SETTING_KEYS = {
@@ -238,6 +241,8 @@ def _restore_tree(paths, app, target):
 
 
 def _get_icon_theme(paths):
+    if not is_live_session(paths["home"]) or not shutil.which("gsettings"):
+        return
     record = paths["originals"] / "papirus-icons" / "original-icon-theme.json"
     if record.exists():
         return
@@ -254,6 +259,8 @@ def _get_icon_theme(paths):
 
 
 def _restore_icon_theme(paths):
+    if not is_live_session(paths["home"]) or not shutil.which("gsettings"):
+        return
     record = paths["originals"] / "papirus-icons" / "original-icon-theme.json"
     if not record.exists():
         return
@@ -485,7 +492,9 @@ def _refresh_spicetify(home=None):
         return False
 
 
-def _reload_spotify_ui():
+def _reload_spotify_ui(home=None):
+    if not is_live_session(home):
+        return
     if not shutil.which("hyprctl"):
         print("Veyra: hyprctl not found; skipped Spotify GUI reload.")
         return
@@ -594,14 +603,14 @@ def _apply_spicetify(paths, colors, dark_palette, light_palette, enabled):
 
         # Reload Spotify only when the theme changed or was first activated.
         if files_changed or not was_active:
-            _reload_spotify_ui()
+            _reload_spotify_ui(paths["home"])
 
     elif _is_active(paths, app):
         for target, _template_name in target_defs.values():
             _restore_file(paths, app, target)
         _set_active(paths, app, False)
         _run_spicetify(paths["home"])
-        _reload_spotify_ui()
+        _reload_spotify_ui(paths["home"])
 def _heroic_targets(home):
     targets = []
     native = config_home(home) / "heroic"

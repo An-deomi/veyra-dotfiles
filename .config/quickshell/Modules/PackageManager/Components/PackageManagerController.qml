@@ -470,7 +470,7 @@ Item {
         repeat: false
         onTriggered: {
             focusKittyProc.running = false;
-            focusKittyProc.command = ["hyprctl", "eval", "hl.dsp.focus({ window = 'class:kitty-floating' })"];
+            focusKittyProc.command = ["hyprctl", "dispatch", "hl.dsp.focus({ window = 'class:kitty-floating' })"];
             focusKittyProc.startDetached();
         }
     }

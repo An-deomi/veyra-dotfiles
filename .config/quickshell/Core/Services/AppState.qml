@@ -76,9 +76,9 @@ Item {
         if (widgetId === "dashboard")
             return "left";
 
-        // music and sysmon share the convex center panel (ConvexCenterPanel);
+        // music, sysmon, and islandOverview share the convex center panel (ConvexCenterPanel);
         // opening one must close the other, so they belong to the same slot
-        if (widgetId === "music" || widgetId === "sysmon")
+        if (widgetId === "music" || widgetId === "sysmon" || widgetId === "islandOverview")
             return "center";
 
         if (widgetId === "controlCenter" || widgetId === "notificationsCenter" || widgetId === "clock" || widgetId.startsWith("systemTray_"))

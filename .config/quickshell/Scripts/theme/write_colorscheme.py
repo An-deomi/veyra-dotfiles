@@ -6,6 +6,10 @@ import sys
 import tempfile
 from pathlib import Path
 
+sys.dont_write_bytecode = True
+
+from xdg_paths import state_home
+
 
 def main():
     if len(sys.argv) < 2:
@@ -20,7 +24,7 @@ def main():
         print("Colorscheme is missing required palette values.", file=sys.stderr)
         return 2
 
-    target_dir = Path(os.environ.get("XDG_STATE_HOME") or (Path.home() / ".local" / "state")) / "veyra"
+    target_dir = state_home() / "veyra"
     target_dir.mkdir(parents=True, exist_ok=True)
     target = target_dir / "colorscheme.json"
     fd, temporary = tempfile.mkstemp(prefix=".colorscheme-", suffix=".tmp", dir=target_dir)

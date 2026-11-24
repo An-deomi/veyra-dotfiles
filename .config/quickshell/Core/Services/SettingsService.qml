@@ -805,7 +805,7 @@ Item {
     }
 
     function applyKeyboardLayouts() {
-        if (!settingsLoaded)
+        if (!settingsLoaded || XdgPaths.safeTestMode)
             return;
         kbLayoutApplyProc.command = ["hyprctl", "eval", "hl.config({input = {kb_layout = '" + keyboardLayoutCodes + "'}})"];
         kbLayoutApplyProc.running = false;
@@ -1017,21 +1017,22 @@ Item {
     function playUiSound(kind) {
         if (!settingsLoaded || !uiSoundsEnabled || XdgPaths.safeTestMode)
             return;
+        const userSoundBase = XdgPaths.dataDir + "/sounds/" + kind;
         const sounds = {
-            "power-plug":   ["/usr/share/sounds/ocean/stereo/power-plug.oga", "/usr/share/sounds/freedesktop/stereo/power-plug.oga"],
-            "power-unplug": ["/usr/share/sounds/ocean/stereo/power-unplug.oga", "/usr/share/sounds/freedesktop/stereo/power-unplug.oga"],
-            "record-start": ["/usr/share/sounds/freedesktop/stereo/device-added.oga"],
-            "record-stop":  ["/usr/share/sounds/ocean/stereo/outcome-success.oga", "/usr/share/sounds/freedesktop/stereo/complete.oga"],
-            "lock":         ["/usr/share/sounds/freedesktop/stereo/service-logout.oga"],
-            "unlock":       ["/usr/share/sounds/freedesktop/stereo/service-login.oga"],
-            "timer-done":   ["/usr/share/sounds/ocean/stereo/alarm-clock-elapsed.oga", "/usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga"]
+            "power-plug":   [userSoundBase + ".oga", userSoundBase + ".wav", "/usr/share/sounds/ocean/stereo/power-plug.oga", "/usr/share/sounds/freedesktop/stereo/power-plug.oga"],
+            "power-unplug": [userSoundBase + ".oga", userSoundBase + ".wav", "/usr/share/sounds/ocean/stereo/power-unplug.oga", "/usr/share/sounds/freedesktop/stereo/power-unplug.oga"],
+            "record-start": [userSoundBase + ".oga", userSoundBase + ".wav", "/usr/share/sounds/freedesktop/stereo/device-added.oga"],
+            "record-stop":  [userSoundBase + ".oga", userSoundBase + ".wav", "/usr/share/sounds/ocean/stereo/outcome-success.oga", "/usr/share/sounds/freedesktop/stereo/complete.oga"],
+            "lock":         [userSoundBase + ".oga", userSoundBase + ".wav", "/usr/share/sounds/freedesktop/stereo/service-logout.oga"],
+            "unlock":       [userSoundBase + ".oga", userSoundBase + ".wav", "/usr/share/sounds/freedesktop/stereo/service-login.oga"],
+            "timer-done":   [userSoundBase + ".oga", userSoundBase + ".wav", "/usr/share/sounds/ocean/stereo/alarm-clock-elapsed.oga", "/usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga"]
         };
         const candidates = sounds[kind];
         if (!candidates || candidates.length === 0)
             return;
         Quickshell.execDetached([
             "sh", "-c",
-            'for f in "$@"; do if [ -r "$f" ]; then (command -v pw-play >/dev/null 2>&1 && exec pw-play "$f" || exec paplay "$f") >/dev/null 2>&1; exit 0; fi; done',
+            'for f in "$@"; do if [ -r "$f" ]; then (if command -v pw-play >/dev/null 2>&1; then exec pw-play "$f"; elif command -v paplay >/dev/null 2>&1; then exec paplay "$f"; fi) >/dev/null 2>&1; exit 0; fi; done',
             "veyra-sound"
         ].concat(candidates));
     }

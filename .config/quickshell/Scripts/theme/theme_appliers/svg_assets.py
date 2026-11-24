@@ -1,19 +1,18 @@
 import os
-
-from xdg_paths import config_home, data_home
+from pathlib import Path
 import re
 
 from color_utils import sanitize_color
+from xdg_paths import config_home, data_home
 
 
 def apply(home, colors):
     accent = colors["accent"]
     accentComplementary = colors["accentComplementary"]
 
-    script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    assets_dir = os.path.join(os.path.dirname(script_dir), "assets")
-    if not os.path.exists(assets_dir):
-        assets_dir = os.path.join(str(config_home(home)), "quickshell", "assets")
+    user_assets = config_home(home) / "quickshell" / "assets"
+    bundled_assets = Path(__file__).resolve().parents[3] / "assets"
+    assets_dir = str(user_assets if user_assets.is_dir() else bundled_assets)
 
     # Never rewrite the repo-shipped assets: write wallpaper-colored copies
     # into $XDG_DATA_HOME/veyra/assets instead. SvgIcon prefers those and

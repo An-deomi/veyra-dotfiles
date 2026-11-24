@@ -599,8 +599,11 @@ Item {
                 if (nd && nd.notification !== notification)
                     return ;
 
-                if (nd)
+                if (nd) {
                     nd.popup = false;
+                    if (String(nd.image || "").startsWith("image://qsimage/"))
+                        nd.image = "";
+                }
 
             });
             notification.summaryChanged.connect(() => {

@@ -1,9 +1,10 @@
 import os
+import shutil
 import subprocess
 
-from xdg_paths import config_home
-
 from color_utils import sanitize_color
+from theme_appliers.file_utils import atomic_write_text
+from xdg_paths import config_home, is_live_session
 
 
 def apply(home, colors):
@@ -65,10 +66,16 @@ color21 {sanitize_color(accentComplementary)}
 """
     kitty_dir = os.path.join(str(config_home(home)), "kitty")
     os.makedirs(kitty_dir, exist_ok=True)
-    with open(os.path.join(kitty_dir, "theme.conf"), "w") as f2:
-        f2.write(kitty_theme)
+    atomic_write_text(os.path.join(kitty_dir, "theme.conf"), kitty_theme)
+    if not is_live_session(home):
+        return
+
     # Reload running kitty instances without a shell string.
-    subprocess.run(["pkill", "-USR1", "-x", "kitty"], check=False)
+    if shutil.which("pkill"):
+        try:
+            subprocess.run(["pkill", "-USR1", "-x", "kitty"], check=False, timeout=3)
+        except (OSError, subprocess.SubprocessError):
+            pass
 
     # Also broadcast OSC 4/10/11/12 palette updates to running Foot and other
     # terminal emulator PTYs so open terminals recolor live on wallpaper change.

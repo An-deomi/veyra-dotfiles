@@ -86,3 +86,12 @@ def apply(home, colors):
     updated = _set_table_values(original, values)
     if updated != original:
         atomic_write_text(starship_file, updated)
+
+    # Ensure ~/.config/starship.toml points to starship/starship.toml when absent
+    # so Starship loads Veyra's palette without requiring STARSHIP_CONFIG.
+    root_toml = config_home(home) / "starship.toml"
+    if not root_toml.exists() and not root_toml.is_symlink():
+        try:
+            root_toml.symlink_to("starship/starship.toml")
+        except OSError:
+            pass

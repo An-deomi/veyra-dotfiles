@@ -3,6 +3,7 @@
   "name": "Foot",
   "origin": "https://github.com/noctalia-dev/noctalia/tree/main/assets/templates/foot",
   "kind": "noctalia",
+  "default_enabled": true,
   "entries": [
     {
       "name": "foot",

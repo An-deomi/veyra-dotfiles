@@ -49,15 +49,27 @@ def prefs_path():
     return config_dir() / "hotspot_backend.json"
 
 
+def example_prefs_paths():
+    return [
+        config_dir() / "hotspot_backend.json.example",
+        Path(__file__).resolve().parents[3] / "hotspot_backend.json.example",
+    ]
+
+
 DEFAULT_PROFILE = "VeyraHotspot"
 
 
 def read_prefs():
-    try:
-        data = json.loads(prefs_path().read_text(encoding="utf-8"))
-        return data if isinstance(data, dict) else {}
-    except Exception:
-        return {}
+    candidates = [prefs_path(), *example_prefs_paths()]
+    for candidate in candidates:
+        if not candidate.is_file():
+            continue
+        try:
+            data = json.loads(candidate.read_text(encoding="utf-8"))
+            return data if isinstance(data, dict) else {}
+        except Exception:
+            continue
+    return {}
 
 
 def preferred_profile():

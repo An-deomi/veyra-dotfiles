@@ -7,7 +7,7 @@ userprefs.lua, colors.lua, colors.local.lua (generated), veyra_prefs.lua, monito
 (generated), hypridle.conf and hyprtoolkit.conf.
 
 colors.local.lua is the only palette file Hyprland reads; there is no colors.conf or
-colors.local.conf. Veyra-managed cursor preferences are stored separately in
-veyra-settings.lua. Veyra's update helper creates this file on first use; it does not
-modify userprefs.local.lua. Display scale and monitor rules are written directly to
-monitors.lua by Veyra Settings.
+colors.local.conf. Veyra-managed cursor, glow, animation, and shader preferences are stored
+separately in veyra-settings.lua. Veyra's update helper creates this file on first use; it does
+not modify userprefs.local.lua. Display scale and monitor rules are written directly to
+monitors.lua by Veyra Settings. Portable templates for machine-local files live under examples/.

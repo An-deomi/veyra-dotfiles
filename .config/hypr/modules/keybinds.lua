@@ -9,8 +9,13 @@ if useUwsm == nil then
     useUwsm = os.getenv("VEYRA_USE_UWSM") == "1"
 end
 local launchPrefix = useUwsm and "uwsm app -- " or ""
-local exitSessionCommand = useUwsm and "uwsm stop" or "hyprctl eval 'hl.dsp.exit()'"
-local calculator = "gnome-calculator"
+local exitSessionCommand = useUwsm
+    and "uwsm check is-active >/dev/null 2>&1 && uwsm stop || hyprctl dispatch 'hl.dsp.exit()'"
+    or "hyprctl dispatch 'hl.dsp.exit()'"
+local calculatorCommand = string.format(
+    [[sh -c 'for app in gnome-calculator qalculate-gtk kcalc galculator; do if command -v "$app" >/dev/null 2>&1; then exec %s"$app"; fi; done']],
+    launchPrefix
+)
 local NUM_WORKSPACES = 10
 local home = os.getenv("HOME") or ""
 local configHome = os.getenv("XDG_CONFIG_HOME")
@@ -37,8 +42,8 @@ hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(defaultsCommand("launch fileManager")
 -- # Open Editor
 hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(defaultsCommand("launch coding")))
 -- # Open Calculator
-hl.bind(mainMod .. " + C", hl.dsp.exec_cmd(launchPrefix .. calculator))
-hl.bind("XF86Calculator", hl.dsp.exec_cmd(launchPrefix .. calculator))
+hl.bind(mainMod .. " + C", hl.dsp.exec_cmd(calculatorCommand))
+hl.bind("XF86Calculator", hl.dsp.exec_cmd(calculatorCommand))
 -- # Open Browser
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd(defaultsCommand("launch browser")))
 -- # System Monitor (btop)
@@ -46,16 +51,16 @@ hl.bind("CONTROL + SHIFT + Escape", hl.dsp.exec_cmd(defaultsCommand("launch btop
 -- # Pick Color
 hl.bind(mainMod .. " + P", hl.dsp.exec_cmd("hyprpicker -a -n"))
 -- # Toggle Hotspot
-hl.bind(mainMod .. " + H", hl.dsp.exec_cmd([[sh -c 'python3 "$HOME/.config/quickshell/Modules/ControlCenter/scripts/hotspot.py" toggle']]))
+hl.bind(mainMod .. " + H", hl.dsp.exec_cmd([[sh -c 'python3 "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/Modules/ControlCenter/scripts/hotspot.py" toggle']]))
 
 -- ## Screenshots
 
 -- # Screenshot (Veyra widget)
 hl.bind("Print", hl.dsp.exec_cmd("qs ipc call widgets toggle screenshot"))
 -- # Screenshot Monitor
-hl.bind("SHIFT + Print", hl.dsp.exec_cmd("rishot monitor"))
+hl.bind("SHIFT + Print", hl.dsp.exec_cmd([[sh -c 'if command -v rishot >/dev/null 2>&1; then exec rishot monitor; fi; exec "${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/Modules/ScreenCapture/scripts/screenshot.sh" full']]))
 -- # Silent Screenshot
-hl.bind("CTRL + Print", hl.dsp.exec_cmd("silent-shot"))
+hl.bind("CTRL + Print", hl.dsp.exec_cmd([[sh -c 'if command -v silent-shot >/dev/null 2>&1; then exec silent-shot; fi; dir="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"; mkdir -p "$dir" && exec grim "$dir/shot-$(date +%Y%m%d-%H%M%S).png"']]))
 
 
 -- ## Window Management
@@ -171,7 +176,7 @@ hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 -- ## Zoom
 
 local function zoomfunction(value)
-	local zoomvalue = hl.get_config("cursor:zoom_factor")
+	local zoomvalue = tonumber(hl.get_config("cursor.zoom_factor") or hl.get_config("cursor:zoom_factor")) or 1.0
 	if (zoomvalue + value) > 3.0 then
 		hl.config({ cursor = { zoom_factor = 3.0 } })
 	elseif (zoomvalue + value) < 1.0 then

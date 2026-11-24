@@ -9,10 +9,13 @@ import tempfile
 import unicodedata
 from pathlib import Path
 
+sys.dont_write_bytecode = True
+
+from xdg_paths import config_home
+
 
 def preset_dir() -> Path:
-    config_home = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")).expanduser()
-    return config_home / "quickshell" / "theme-presets"
+    return config_home() / "quickshell" / "theme-presets"
 
 
 def slugify(name: str) -> str:

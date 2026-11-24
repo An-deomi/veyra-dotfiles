@@ -24,8 +24,8 @@ Item {
     // State & mode flags
     readonly property bool hasActiveNotifications: notifLayer.hasActiveNotifications
     property real notifProgress: (hasActiveNotifications && !notifLayer.isRemovingNotif) ? 1 : 0
-    readonly property bool isCenterExpanded: SettingsService.barConvexMode && (AppState.isWidgetOpen("music") || AppState.isWidgetOpen("sysmon"))
-    readonly property string activeContentType: AppState.isWidgetOpen("sysmon") ? "sysmon" : (AppState.isWidgetOpen("music") ? "music" : "")
+    readonly property bool isCenterExpanded: SettingsService.barConvexMode && (AppState.isWidgetOpen("music") || AppState.isWidgetOpen("sysmon") || AppState.isWidgetOpen("islandOverview"))
+    readonly property string activeContentType: AppState.isWidgetOpen("islandOverview") ? "islandOverview" : (AppState.isWidgetOpen("sysmon") ? "sysmon" : (AppState.isWidgetOpen("music") ? "music" : ""))
     property bool isOpen: false
     property bool isClosing: false
     property real openProgress: 0
@@ -103,6 +103,8 @@ Item {
                 AppState.closeWidget("music");
             if (AppState.isWidgetOpen("sysmon"))
                 AppState.closeWidget("sysmon");
+            if (AppState.isWidgetOpen("islandOverview"))
+                AppState.closeWidget("islandOverview");
 
         }
     }

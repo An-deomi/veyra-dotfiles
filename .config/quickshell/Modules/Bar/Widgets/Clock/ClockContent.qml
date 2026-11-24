@@ -6,9 +6,12 @@ import Quickshell.Io
 import qs.Core
 import qs.Core.Components
 import qs.Core.Services
+import qs.Core.Utils
 
 Item {
     id: root
+
+    readonly property color onAccentColor: ColorUtils.isDark(Theme.accent) ? "#ffffff" : "#0b0b0f"
 
     property var widget: null
     property date now: new Date()
@@ -770,7 +773,7 @@ Item {
                             text: root.pomoRunning ? "Pause" : (root.pomoRemainingSec === 0 ? "Restart" : "Start")
                             customSize: 11
                             font.bold: true
-                            color: root.pomoRunning ? Theme.accent : Theme.bg
+                            color: root.pomoRunning ? Theme.accent : root.onAccentColor
                         }
 
                         TapHandler {
@@ -916,7 +919,7 @@ Item {
                         text: String(modelData.day)
                         customSize: Constants.sizeSm
                         font.bold: parent.isToday || parent.isSelected
-                        color: parent.isSelected ? Theme.bg : Theme.fg
+                        color: parent.isSelected ? root.onAccentColor : Theme.fg
                         opacity: modelData.inMonth ? 1 : 0.3
                     }
 
@@ -928,7 +931,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.bottom: parent.bottom
                         anchors.bottomMargin: 3
-                        color: parent.isSelected ? Theme.bg : Theme.accent
+                        color: parent.isSelected ? root.onAccentColor : Theme.accent
                     }
 
                     MouseArea {

@@ -475,11 +475,18 @@ AppWindow {
         standardButtons: Dialog.Cancel | Dialog.Ok
         onAccepted: root.deleteShortcut(root.pendingDeleteId)
 
-        contentItem: ThemedText {
-            text: "Remove ‘" + root.pendingDeleteName + "’? This only removes the custom shortcut created in Veyra."
-            color: Theme.muted
-            customSize: Constants.sizeSm
-            wrapMode: Text.WordWrap
+        contentItem: Item {
+            implicitWidth: 360
+            implicitHeight: deleteShortcutMessage.implicitHeight + 16
+            ThemedText {
+                id: deleteShortcutMessage
+                anchors.fill: parent
+                anchors.margins: 8
+                text: "Remove ‘" + root.pendingDeleteName + "’? This only removes the custom shortcut created in Veyra."
+                color: Theme.muted
+                customSize: Constants.sizeSm
+                wrapMode: Text.WordWrap
+            }
         }
     }
 

@@ -29,7 +29,7 @@ Item {
         "id": "logout",
         "label": "Logout",
         "icon": "logout",
-        "command": ["sh", "-c", "uwsm check is-active >/dev/null 2>&1 && uwsm stop || hyprctl eval 'hl.dsp.exit()' || loginctl terminate-session \"$XDG_SESSION_ID\""],
+        "command": ["sh", "-c", "uwsm check is-active >/dev/null 2>&1 && uwsm stop || hyprctl dispatch 'hl.dsp.exit()' || loginctl terminate-session \"$XDG_SESSION_ID\""],
         "confirm": true
     }, {
         "id": "reboot",

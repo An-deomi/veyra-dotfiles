@@ -3,6 +3,7 @@
   "name": "Fastfetch",
   "origin": "https://github.com/noctalia-dev/community-templates/tree/main/fastfetch",
   "kind": "noctalia",
+  "default_enabled": true,
   "entries": [
     {
       "name": "fastfetch",

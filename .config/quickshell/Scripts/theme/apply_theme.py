@@ -6,6 +6,7 @@ sys.dont_write_bytecode = True
 import json
 import os
 import subprocess
+import tempfile
 
 from color_utils import (
     blend_hex, get_brightness, resolve_color, sanitize_color,
@@ -25,7 +26,59 @@ from theme_appliers import (
     starship,
     svg_assets,
 )
-from xdg_paths import cache_home, config_home, data_home, state_home
+from xdg_paths import cache_home, config_home, data_home, is_live_session, state_home
+
+
+DEFAULT_DARK_SCHEME = {
+    "name": "Default",
+    "generateFromWallpaper": True,
+    "wallpaperIsDark": True,
+    "bgOpacity": 1,
+    "bg": "#030107",
+    "opaqueBg": "#030107",
+    "fg": "#d1d1d1",
+    "accent": "#a77ef5",
+    "accentComplementary": "#f57eb6",
+    "shadow": "#bf000000",
+}
+
+
+def _seed_default_colorscheme(home, state_file):
+    """Seed a valid colorscheme.json on fresh installs before any wallpaper is cached."""
+    wp_cache = os.path.join(str(cache_home(home)), "quickshell", "wallpaper_colorscheme.json")
+    seed = None
+    if os.path.isfile(wp_cache):
+        try:
+            with open(wp_cache, "r", encoding="utf-8") as handle:
+                candidate = json.load(handle)
+            if isinstance(candidate, dict) and all(k in candidate for k in ("bg", "fg", "accent")):
+                seed = candidate
+        except (OSError, UnicodeError, ValueError):
+            seed = None
+    if seed is None:
+        seed = dict(DEFAULT_DARK_SCHEME)
+
+    state_dir = os.path.dirname(state_file)
+    os.makedirs(state_dir, mode=0o700, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(prefix=".colorscheme-", suffix=".tmp", dir=state_dir)
+    try:
+        os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            json.dump(seed, stream, indent=2)
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(tmp_path, state_file)
+        print(f"Veyra theme: seeded initial colorscheme at {state_file}")
+        return True
+    except OSError as exc:
+        print(f"Veyra theme: could not seed initial colorscheme ({exc})")
+        try:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+        except OSError:
+            pass
+        return False
 
 
 def _run_applier(name, callback, *args, **kwargs):
@@ -47,8 +100,11 @@ def main():
     cache_file = state_file if os.path.exists(state_file) else legacy_file
 
     if not os.path.exists(cache_file):
-        print("Colorscheme cache not found.")
-        return
+        if _seed_default_colorscheme(home, state_file):
+            cache_file = state_file
+        else:
+            print("Colorscheme cache not found.")
+            return
 
     try:
         with open(cache_file, "r", encoding="utf-8") as f:
@@ -193,6 +249,8 @@ def main():
     if applier_enabled("dynamicThemeLazygitEnabled"):
         _run_applier("LazyGit", lazygit.apply, home, colors)
 
+    live_session = is_live_session(home)
+
     # Notify running toolkit applications as soon as the system palettes are written.
     # App-specific template output can take longer, so refresh global palettes first.
     # This remains best-effort; some apps ignore external theme notifications.
@@ -203,7 +261,7 @@ def main():
         refresh_args.append("--qt")
     if applier_enabled("dynamicThemeKColorSchemeEnabled"):
         refresh_args.append("--kde")
-    if len(refresh_args) > 2:
+    if live_session and len(refresh_args) > 2:
         try:
             result = subprocess.run(refresh_args, capture_output=True, text=True, timeout=18, check=False)
             if result.stdout.strip():
@@ -234,7 +292,7 @@ def main():
         for path in chooser_palette_files
     )
 
-    if chooser_palette_after != chooser_palette_before:
+    if live_session and chooser_palette_after != chooser_palette_before:
         try:
             result = subprocess.run(
                 [

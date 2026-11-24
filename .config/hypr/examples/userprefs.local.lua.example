@@ -2,8 +2,8 @@
 -- It is intentionally user-local and should not be committed.
 return {
     keyboard_layout = "us",
-    keyboard_options = "",
-    cursor_theme = "Adwaita",
+    keyboard_options = "grp:alt_shift_toggle",
+    cursor_theme = "Bibata-Modern-Ice",
     cursor_size = 24,
 
     -- Monitors are managed in hypr/monitors.lua (Veyra Settings -> Display).

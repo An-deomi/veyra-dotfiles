@@ -1,0 +1,18 @@
+-- Example Veyra Settings state (managed automatically at ~/.config/hypr/veyra-settings.lua).
+-- When veyra-settings.lua is absent, veyra_prefs.lua returns {} and built-in defaults apply.
+return {
+    cursor_theme = "Bibata-Modern-Ice",
+    cursor_size = 24,
+    keyboard_layout = "us",
+    shadow_glow_enabled = false,
+    shadow_glow_mode = "accent",
+    shadow_glow_opacity = 30,
+    anim_border_speed = 60,
+    anim_border_spin = true,
+    anim_curve = "snappy",
+    anim_layers = true,
+    anim_speed_factor = 1.3,
+    anim_window_style = "popin 80%",
+    anim_workspace_style = "slidefade 20%",
+    screen_shader = "none",
+}

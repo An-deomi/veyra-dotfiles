@@ -132,6 +132,8 @@ QtObject {
 
         closed = true;
         popup = false;
+        if (String(image || "").startsWith("image://qsimage/"))
+            image = "";
         locks = ({
         });
         progressAnim.stop();

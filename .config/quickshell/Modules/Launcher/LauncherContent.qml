@@ -93,11 +93,11 @@ Item {
 
     property var emojiList: []
 
-    function evalMath(expr) {
+    function evalMath(expr, allowPlainNumber) {
         const src = expr.replace(/\s+/g, "").replace(/×/g, "*").replace(/÷/g, "/");
-        if (!/^[0-9+\-*\/().%^]+$/.test(src))
+        if (!src || !/^[0-9+\-*\/().%^]+$/.test(src))
             return null;
-        if (!/[+*\/%^]/.test(src) && !/.-/.test(src))
+        if (!allowPlainNumber && !/[+*\/%^]/.test(src) && !/.-/.test(src))
             return null;
         let pos = 0;
         function peek() { return src[pos]; }
@@ -266,7 +266,7 @@ Item {
                      actions: [], categories: [], comment: comment, genericName: "", keywords: [] };
         }
         function shQuote(str) {
-            return '"' + str.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+            return "'" + String(str).replace(/'/g, "'\\''") + "'";
         }
 
         if (raw.startsWith(">")) {
@@ -276,12 +276,27 @@ Item {
             if (cmd)
                 results.push(specialRow("__run__", (inTerm ? "Run in terminal: " : "Run: ") + cmd,
                     "Enter to run", "utilities-terminal", cmd, inTerm));
+        } else if (raw.startsWith("=")) {
+            const mathInput = raw.slice(1).trim();
+            results = [];
+            if (mathInput) {
+                const calc = evalMath(mathInput, true);
+                if (calc !== null)
+                    results.push(specialRow("__calc__", "= " + calc, "Enter to copy",
+                        "accessories-calculator", "wl-copy -- " + calc));
+            }
         } else if (raw.startsWith(":")) {
             const q = raw.slice(1).trim().toLowerCase().replace(/\s+/g, "_");
             results = [];
             if (root.emojiList.length === 0 && !loadEmojiProc.running)
                 loadEmojiProc.running = true;
-            if (q.length > 0) {
+            if (q.length === 0) {
+                for (let j = 0; j < root.emojiList.length && j < 60; j++) {
+                    const it = root.emojiList[j];
+                    results.push(specialRow("__emoji__" + it.e, it.e + "   " + it.n.replace(/_/g, " "),
+                        "Enter to copy", "", "wl-copy -- " + it.e));
+                }
+            } else {
                 let hits = [];
                 for (let i = 0; i < root.emojiList.length; i++) {
                     const item = root.emojiList[i];
@@ -306,10 +321,12 @@ Item {
                 }
             }
         } else if (raw === "cb" || raw.startsWith("cb ")) {
+            const cbQuery = raw.slice(2).trim();
             results = [
-                specialRow("__clipboard__", "Open Clipboard History",
+                specialRow("__clipboard__",
+                    cbQuery ? ("Search Clipboard for \"" + cbQuery + "\"") : "Open Clipboard History",
                     "Enter to open Veyra Clipboard", "edit-paste",
-                    "qs ipc call widgets open clipboard")
+                    cbQuery || "open")
             ];
         } else if (raw.startsWith("!")) {
             const spaceIdx = raw.indexOf(" ");
@@ -331,7 +348,7 @@ Item {
                     term ? ("xdg-open " + shQuote(eng.url + encodeURIComponent(term))) : ""));
             }
         } else if (raw) {
-            const calc = evalMath(raw);
+            const calc = evalMath(raw, false);
             if (calc !== null)
                 results.unshift(specialRow("__calc__", "= " + calc, "Enter to copy",
                     "accessories-calculator", "wl-copy -- " + calc));
@@ -406,6 +423,13 @@ Item {
     }
 
     function launchApp(exec, terminal, appId) {
+        if (appId === "__clipboard__") {
+            const cbFilter = (exec && exec !== "open") ? String(exec) : "";
+            AppState.openWidget("clipboard");
+            if (cbFilter !== "")
+                Qt.callLater(function() { ClipboardService.filterClipboard(cbFilter, "all"); });
+            return;
+        }
         if (!exec)
             return ;
         if (appId && !appId.startsWith("__"))

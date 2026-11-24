@@ -405,10 +405,24 @@ AppContainer {
         id: deleteConfirmDialog
         property string presetId: ""
         property string presetName: ""
+        anchors.centerIn: Overlay.overlay
+        width: 380
         title: "Delete palette?"
         modal: true
         standardButtons: Dialog.Yes | Dialog.No
         onAccepted: root.deletePreset(presetId)
-        contentItem: ThemedText { text: "Delete '" + deleteConfirmDialog.presetName + "'? This cannot be undone."; color: Theme.fg; customSize: 12; wrapMode: Text.Wrap }
+        contentItem: Item {
+            implicitWidth: 340
+            implicitHeight: deleteConfirmText.implicitHeight + 16
+            ThemedText {
+                id: deleteConfirmText
+                anchors.fill: parent
+                anchors.margins: 8
+                text: "Delete '" + deleteConfirmDialog.presetName + "'? This cannot be undone."
+                color: Theme.fg
+                customSize: 12
+                wrapMode: Text.WordWrap
+            }
+        }
     }
 }

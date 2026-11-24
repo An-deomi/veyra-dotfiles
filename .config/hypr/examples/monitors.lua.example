@@ -1,0 +1,10 @@
+-- Example monitor configuration (copy to monitors.lua or manage via Veyra Settings -> Display).
+-- When monitors.lua is absent, modules/monitors.lua automatically enables all connected displays
+-- with preferred resolution, auto position, and auto scale.
+
+hl.monitor({
+    output = "",
+    mode = "preferred",
+    position = "auto",
+    scale = "auto",
+})

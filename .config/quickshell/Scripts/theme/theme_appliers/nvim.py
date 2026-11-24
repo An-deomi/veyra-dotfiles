@@ -1,10 +1,11 @@
 import os
+import shutil
 import stat
 import subprocess
 
-from xdg_paths import cache_home
-
 from color_utils import sanitize_color
+from theme_appliers.file_utils import atomic_write_text
+from xdg_paths import cache_home, is_live_session
 
 
 def apply(home, colors):
@@ -49,8 +50,10 @@ def apply(home, colors):
     lua_content = f'vim.opt.background = "{nvim_bg}"\n{qs_colors}for k in pairs(package.loaded) do if k == "luna" or k:match("^luna%.") then package.loaded[k] = nil end end\npcall(vim.cmd.colorscheme, "luna")'
     nvim_theme_file = os.path.join(str(cache_home(home)), "quickshell", "nvim_theme.lua")
     os.makedirs(os.path.dirname(nvim_theme_file), exist_ok=True)
-    with open(nvim_theme_file, "w") as f2:
-        f2.write(lua_content)
+    atomic_write_text(nvim_theme_file, lua_content)
+
+    if not is_live_session(home) or not shutil.which("nvim"):
+        return
 
     try:
         for d in ["/tmp", os.environ.get("XDG_RUNTIME_DIR", "")]:

@@ -14,7 +14,7 @@ local veyraPrefs = require("veyra_prefs")
 
 hl.config({
 	general = {
-		gaps_in = 3,
+		gaps_in = 4,
 		gaps_out = 2,
 		border_size = 4,
 		["col.active_border"] = colors.accent_alpha,

@@ -2,13 +2,15 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import qs.Core
 
 ShellRoot {
     id: root
 
-    readonly property string home: Quickshell.env("HOME")
-    readonly property string recentsPath: XdgPaths.cacheDir + "/emoji_recent.json"
+    readonly property string home: Quickshell.env("HOME") || ""
+    readonly property string cacheHome: Quickshell.env("XDG_CACHE_HOME") || (home + "/.cache")
+    readonly property string stateHome: Quickshell.env("XDG_STATE_HOME") || (home + "/.local/state")
+    readonly property string recentsPath: cacheHome + "/quickshell/emoji_recent.json"
+    readonly property string schemePath: stateHome + "/veyra/colorscheme.json"
     readonly property var categories: [
         { label: "All", group: "" },
         { label: "😀", group: "Smileys & Emotion" },
@@ -103,12 +105,12 @@ ShellRoot {
                 list.push(recents[i]);
         }
         list = list.slice(0, 27);
-        Quickshell.execDetached(["sh", "-c", "printf '%s' \"$1\" > \"$2\"", "sh", JSON.stringify(list), recentsPath]);
+        Quickshell.execDetached(["sh", "-c", "mkdir -p \"$(dirname \"$2\")\" && printf '%s' \"$1\" > \"$2\"", "sh", JSON.stringify(list), recentsPath]);
         Qt.quit();
     }
 
     FileView {
-        path: XdgPaths.stateDir + "/colorscheme.json"
+        path: root.schemePath
         printErrors: false
         onLoaded: {
             try {

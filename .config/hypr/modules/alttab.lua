@@ -4,8 +4,13 @@
 -- when the optional user service is installed; install.sh --with-alt-tab
 -- installs it. hyprland.start also starts the service on login.
 local home = os.getenv("HOME") or ""
-local altTabDir = home .. "/.config/hypr/alt-tab"
-local serviceUnit = home .. "/.config/systemd/user/fast-alt-tab.service"
+local configHome = os.getenv("XDG_CONFIG_HOME")
+if not configHome or configHome == "" then
+    configHome = home .. "/.config"
+end
+local altTabDir = configHome .. "/hypr/alt-tab"
+local serviceUnit = configHome .. "/systemd/user/fast-alt-tab.service"
+local systemServiceUnit = "/usr/lib/systemd/user/fast-alt-tab.service"
 
 local function readable(path)
     local file = io.open(path, "r")
@@ -16,7 +21,7 @@ local function readable(path)
     return true
 end
 
-if readable(altTabDir .. "/shell.qml") and readable(serviceUnit) then
+if readable(altTabDir .. "/shell.qml") and (readable(serviceUnit) or readable(systemServiceUnit)) then
 
     local function action(command)
         return hl.dsp.exec_cmd(string.format("qs ipc -p %q call switcher %s", altTabDir, command))

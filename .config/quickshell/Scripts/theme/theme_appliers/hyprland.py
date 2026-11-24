@@ -1,8 +1,10 @@
 import os
+import shutil
 import subprocess
 
 from color_utils import hypr_color
-from xdg_paths import config_home
+from theme_appliers.file_utils import atomic_write_text
+from xdg_paths import config_home, is_live_session
 
 
 def apply(home, colors):
@@ -39,8 +41,15 @@ return {{
 """
     hypr_dir = os.path.join(str(config_home(home)), "hypr")
     os.makedirs(hypr_dir, exist_ok=True)
-    with open(os.path.join(hypr_dir, "colors.local.lua"), "w") as f2:
-        f2.write(hypr_content)
-    subprocess.run(
-        ["hyprctl", "reload"], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL
-    )
+    atomic_write_text(os.path.join(hypr_dir, "colors.local.lua"), hypr_content)
+    if is_live_session(home) and shutil.which("hyprctl"):
+        try:
+            subprocess.run(
+                ["hyprctl", "reload"],
+                stderr=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                timeout=5,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError):
+            pass

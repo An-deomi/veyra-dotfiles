@@ -10,14 +10,18 @@ ThemedSlider {
 
     property int brightness: 0
     property bool isVisible: true
+    property bool hasBacklight: true
 
     function setBrightness(val) {
+        if (!root.hasBacklight)
+            return;
         let finalVal = Math.max(5, val);
         brightSetProc.command = ["brightnessctl", "s", finalVal + "%"];
         brightSetProc.running = true;
         root.brightness = finalVal;
     }
 
+    visible: root.hasBacklight
     label: "Screen brightness"
     value: root.brightness
     icon: "sun"
@@ -33,16 +37,23 @@ ThemedSlider {
 
     Timer {
         interval: 250
-        running: root.isVisible
+        running: root.isVisible && root.hasBacklight
         repeat: true
         triggeredOnStart: true
-        onTriggered: brightGetProc.running = true
+        onTriggered: {
+            if (!brightGetProc.running)
+                brightGetProc.running = true;
+        }
     }
 
     Process {
         id: brightGetProc
 
         command: ["brightnessctl", "-m"]
+        onExited: (exitCode) => {
+            if (exitCode !== 0)
+                root.hasBacklight = false;
+        }
 
         stdout: SplitParser {
             onRead: (data) => {

@@ -5,8 +5,11 @@ sys.dont_write_bytecode = True
 import configparser
 import json
 import re
+import shutil
 import subprocess
 from pathlib import Path
+
+from xdg_paths import config_home, is_live_session
 
 def main():
     if len(sys.argv) < 3:
@@ -27,15 +30,19 @@ def main():
         sys.exit(1)
 
     home = Path.home()
+    cfg_home = config_home(home)
+    live = is_live_session(home)
     full_font = f"{font_name} {font_size}"
 
-    subprocess.run(
-        ["gsettings", "set", "org.gnome.desktop.interface", "font-name", full_font],
-        capture_output=True,
-    )
+    if live and shutil.which("gsettings"):
+        subprocess.run(
+            ["gsettings", "set", "org.gnome.desktop.interface", "font-name", full_font],
+            capture_output=True,
+            check=False,
+        )
 
     for gtk_ver in ["gtk-3.0", "gtk-4.0"]:
-        ini_path = home / ".config" / gtk_ver / "settings.ini"
+        ini_path = cfg_home / gtk_ver / "settings.ini"
         if ini_path.is_file():
             try:
                 lines = ini_path.read_text(encoding="utf-8").splitlines(keepends=True)
@@ -54,7 +61,7 @@ def main():
                 print(f"Warning: Failed to update {ini_path}: {exc}", file=sys.stderr)
 
     for qtct in ["qt5ct", "qt6ct"]:
-        qtct_conf = home / ".config" / qtct / f"{qtct}.conf"
+        qtct_conf = cfg_home / qtct / f"{qtct}.conf"
         if qtct_conf.is_file():
             try:
                 config = configparser.ConfigParser()
@@ -93,9 +100,10 @@ def main():
         print(result.stderr or result.stdout, file=sys.stderr)
         sys.exit(result.returncode)
 
-    subprocess.run(["hyprctl", "reload"], check=False)
+    if live and shutil.which("hyprctl"):
+        subprocess.run(["hyprctl", "reload"], check=False)
 
-    kitty_conf = home / ".config" / "kitty" / "kitty.conf"
+    kitty_conf = cfg_home / "kitty" / "kitty.conf"
     if kitty_conf.is_file():
         try:
             content = kitty_conf.read_text(encoding="utf-8")
@@ -107,7 +115,8 @@ def main():
             )
             if count:
                 kitty_conf.write_text(new_content, encoding="utf-8")
-                subprocess.run(["killall", "-USR1", "kitty"], stderr=subprocess.DEVNULL)
+                if live and shutil.which("pkill"):
+                    subprocess.run(["pkill", "-USR1", "-x", "kitty"], stderr=subprocess.DEVNULL, check=False)
         except Exception as exc:
             print(f"Warning: Failed to update Kitty font: {exc}", file=sys.stderr)
 

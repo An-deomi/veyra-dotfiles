@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Modules.Music as MusicModule
 import qs.Modules.Bar.Components as BarComponents
+import qs.Modules.Bar.Styles.Island as IslandModule
 
 Item {
     id: root
@@ -13,6 +14,29 @@ Item {
     required property bool isOpen
     required property string activeContentType
     readonly property alias item: contentLoader.item
+
+    function focusLoadedItem() {
+        if (!root.isOpen || !contentLoader.item)
+            return;
+        if (typeof contentLoader.item.forceActiveFocus === "function")
+            contentLoader.item.forceActiveFocus();
+    }
+
+    onIsOpenChanged: {
+        if (isOpen)
+            focusDelay.restart();
+    }
+    onActiveContentTypeChanged: {
+        if (isOpen)
+            focusDelay.restart();
+    }
+
+    Timer {
+        id: focusDelay
+        interval: 40
+        repeat: false
+        onTriggered: root.focusLoadedItem()
+    }
 
     anchors.fill: parent
     anchors.leftMargin: root.flareW + root.contentPadding
@@ -29,7 +53,19 @@ Item {
 
         anchors.fill: parent
         active: root.isOpen || root.openProgress > 0.001
-        sourceComponent: root.activeContentType === "sysmon" ? sysmonComp : (root.activeContentType === "music" ? musicComp : null)
+        sourceComponent: root.activeContentType === "islandOverview" ? overviewComp : (root.activeContentType === "sysmon" ? sysmonComp : (root.activeContentType === "music" ? musicComp : null))
+        onLoaded: {
+            if (root.isOpen)
+                focusDelay.restart();
+        }
+    }
+
+    Component {
+        id: overviewComp
+
+        IslandModule.IslandOverview {
+            widget: root.centerWidget
+        }
     }
 
     Component {

@@ -8,6 +8,7 @@ rgba(RRGGBBAA) without the leading '#'.
 import os
 
 from color_utils import blend_hex
+from theme_appliers.file_utils import atomic_write_text
 from xdg_paths import config_home
 
 
@@ -50,5 +51,4 @@ def apply(home, colors):
 
     hypr_dir = os.path.join(str(config_home(home)), "hypr")
     os.makedirs(hypr_dir, exist_ok=True)
-    with open(os.path.join(hypr_dir, "hyprtoolkit.conf"), "w", encoding="utf-8") as handle:
-        handle.write(content)
+    atomic_write_text(os.path.join(hypr_dir, "hyprtoolkit.conf"), content)

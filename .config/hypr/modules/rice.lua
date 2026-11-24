@@ -41,8 +41,17 @@ local validShaders = {
     crt = true,
     warm = true,
 }
+local function readableFile(path)
+    local f = io.open(path, "r")
+    if not f then
+        return false
+    end
+    f:close()
+    return true
+end
 local shaderName = veyraPrefs.screen_shader or "none"
-local shaderPath = validShaders[shaderName] and (configHome .. "/hypr/shaders/" .. shaderName .. ".glsl") or ""
+local candidateShader = validShaders[shaderName] and (configHome .. "/hypr/shaders/" .. shaderName .. ".glsl") or ""
+local shaderPath = (candidateShader ~= "" and readableFile(candidateShader)) and candidateShader or ""
 
 -- ## Look -------------------------------------------------------------------
 hl.config({
@@ -113,7 +122,16 @@ hl.window_rule({
     workspace = "special:term",
 })
 hl.bind("SUPER + grave", function()
-    hl.exec_cmd("pgrep -f 'kitty --class dropterm' >/dev/null || kitty --class dropterm")
+    local hasDropterm = false
+    for _, win in ipairs(hl.get_windows()) do
+        if win.class == "dropterm" then
+            hasDropterm = true
+            break
+        end
+    end
+    if not hasDropterm then
+        hl.exec_cmd([[sh -c 'if command -v kitty >/dev/null 2>&1; then exec kitty --class dropterm; elif command -v foot >/dev/null 2>&1; then exec foot --app-id=dropterm; elif command -v alacritty >/dev/null 2>&1; then exec alacritty --class dropterm; fi']])
+    end
     hl.dispatch(hl.dsp.workspace.toggle_special("term"))
 end)
 

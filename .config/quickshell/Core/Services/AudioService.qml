@@ -50,7 +50,7 @@ Item {
     Process {
         id: micVolumeProc
 
-        command: ["pamixer", "--default-source", "--get-volume"]
+        command: ["sh", "-c", "if command -v pamixer >/dev/null 2>&1; then pamixer --default-source --get-volume; elif command -v wpctl >/dev/null 2>&1; then wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | awk '{printf \"%d\\n\", $2 * 100 + 0.5}'; elif command -v pactl >/dev/null 2>&1; then pactl get-source-volume @DEFAULT_SOURCE@ | grep -oE '[0-9]+%' | head -n1 | tr -d '%'; fi"]
 
         stdout: SplitParser {
             onRead: (data) => {
@@ -66,7 +66,7 @@ Item {
     Process {
         id: micMuteProc
 
-        command: ["pamixer", "--default-source", "--get-mute"]
+        command: ["sh", "-c", "if command -v pamixer >/dev/null 2>&1; then pamixer --default-source --get-mute; elif command -v wpctl >/dev/null 2>&1; then wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | grep -q MUTED && echo true || echo false; elif command -v pactl >/dev/null 2>&1; then pactl get-source-mute @DEFAULT_SOURCE@ | grep -qi yes && echo true || echo false; fi"]
 
         stdout: SplitParser {
             onRead: (data) => {
@@ -80,7 +80,8 @@ Item {
         id: micSetVolumeProc
 
         function setVol(val) {
-            command = ["pamixer", "--default-source", "--set-volume", String(val)];
+            const clamped = Math.max(0, Math.min(100, Math.round(Number(val) || 0)));
+            command = ["sh", "-c", "if command -v pamixer >/dev/null 2>&1; then exec pamixer --default-source --set-volume \"$1\"; elif command -v wpctl >/dev/null 2>&1; then exec wpctl set-volume @DEFAULT_AUDIO_SOURCE@ \"${1}%\"; elif command -v pactl >/dev/null 2>&1; then exec pactl set-source-volume @DEFAULT_SOURCE@ \"${1}%\"; fi", "veyra-mic-vol", String(clamped)];
             running = false;
             running = true;
         }
@@ -91,7 +92,7 @@ Item {
         id: micSetMuteProc
 
         function setMute(state) {
-            command = ["pamixer", "--default-source", state ? "--mute" : "--unmute"];
+            command = ["sh", "-c", "if command -v pamixer >/dev/null 2>&1; then exec pamixer --default-source $([ \"$1\" = 1 ] && echo --mute || echo --unmute); elif command -v wpctl >/dev/null 2>&1; then exec wpctl set-mute @DEFAULT_AUDIO_SOURCE@ \"$1\"; elif command -v pactl >/dev/null 2>&1; then exec pactl set-source-mute @DEFAULT_SOURCE@ \"$1\"; fi", "veyra-mic-mute", state ? "1" : "0"];
             running = false;
             running = true;
         }

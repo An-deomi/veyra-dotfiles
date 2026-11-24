@@ -21,19 +21,31 @@ import urllib.parse
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+sys.dont_write_bytecode = True
+
+from xdg_paths import cache_home, config_home, data_home, is_live_session, state_home
+
 SCRIPT_DIR = Path(__file__).resolve().parent
-HOME = Path.home().resolve()
-CONFIG_HOME = Path(os.environ.get("XDG_CONFIG_HOME") or (HOME / ".config")).expanduser()
-DATA_HOME = Path(os.environ.get("XDG_DATA_HOME") or (HOME / ".local/share")).expanduser()
-CACHE_HOME = Path(os.environ.get("XDG_CACHE_HOME") or (HOME / ".cache")).expanduser()
-STATE_HOME = Path(os.environ.get("XDG_STATE_HOME") or (HOME / ".local/state")).expanduser()
 # Shipped templates live beside the application source. Imported templates and
 # their edits belong in the user's data directory, never inside a Git checkout.
 BUNDLED_TEMPLATE_ROOT = SCRIPT_DIR.parents[1] / "custom_templates"
-USER_TEMPLATE_ROOT = DATA_HOME / "veyra/custom_templates"
-LEGACY_TEMPLATE_ROOT = CONFIG_HOME / "quickshell/custom_templates"
-TEMPLATE_ROOT = USER_TEMPLATE_ROOT  # compatibility name for import destinations
-TEMPLATE_STATE_ROOT = STATE_HOME / "veyra/custom_templates"
+
+
+def _bind_home(home: str | Path | None = None) -> None:
+    global HOME, CONFIG_HOME, DATA_HOME, CACHE_HOME, STATE_HOME
+    global USER_TEMPLATE_ROOT, LEGACY_TEMPLATE_ROOT, TEMPLATE_ROOT, TEMPLATE_STATE_ROOT
+    HOME = Path(home or os.environ.get("HOME") or Path.home()).expanduser().resolve(strict=False)
+    CONFIG_HOME = config_home(HOME).resolve(strict=False)
+    DATA_HOME = data_home(HOME).resolve(strict=False)
+    CACHE_HOME = cache_home(HOME).resolve(strict=False)
+    STATE_HOME = state_home(HOME).resolve(strict=False)
+    USER_TEMPLATE_ROOT = DATA_HOME / "veyra/custom_templates"
+    LEGACY_TEMPLATE_ROOT = CONFIG_HOME / "quickshell/custom_templates"
+    TEMPLATE_ROOT = USER_TEMPLATE_ROOT  # compatibility name for import destinations
+    TEMPLATE_STATE_ROOT = STATE_HOME / "veyra/custom_templates"
+
+
+_bind_home()
 MAX_DOWNLOAD = 40 * 1024 * 1024
 MAX_TOTAL_FILES = 300
 MAX_SINGLE_FILE = 8 * 1024 * 1024
@@ -181,7 +193,7 @@ def read_template_state(folder: Path, metadata: dict[str, Any]) -> dict[str, Any
             "last_hashes": state.get("last_hashes", {}) if isinstance(state.get("last_hashes", {}), dict) else {},
         }
     legacy = {
-        "enabled": bool(metadata.get("enabled", False)),
+        "enabled": bool(metadata.get("enabled", metadata.get("default_enabled", False))),
         "backups": metadata.get("backups", {}) if isinstance(metadata.get("backups", {}), dict) else {},
         "last_hashes": metadata.get("last_hashes", {}) if isinstance(metadata.get("last_hashes", {}), dict) else {},
     }
@@ -659,22 +671,28 @@ def template_folder(template_id: str) -> tuple[Path, dict[str, Any]]:
 
 
 def expand_path(raw: str, allow_directory: bool = False) -> Path:
-    raw = os.path.expanduser(os.path.expandvars(raw.strip()))
+    raw = raw.strip()
     xdg = {
-        "$XDG_CONFIG_HOME": os.environ.get("XDG_CONFIG_HOME") or str(HOME / ".config"),
-        "$XDG_DATA_HOME": os.environ.get("XDG_DATA_HOME") or str(HOME / ".local/share"),
-        "$XDG_STATE_HOME": os.environ.get("XDG_STATE_HOME") or str(HOME / ".local/state"),
-        "$XDG_CACHE_HOME": os.environ.get("XDG_CACHE_HOME") or str(HOME / ".cache"),
+        "$XDG_CONFIG_HOME": str(CONFIG_HOME),
+        "${XDG_CONFIG_HOME}": str(CONFIG_HOME),
+        "$XDG_DATA_HOME": str(DATA_HOME),
+        "${XDG_DATA_HOME}": str(DATA_HOME),
+        "$XDG_STATE_HOME": str(STATE_HOME),
+        "${XDG_STATE_HOME}": str(STATE_HOME),
+        "$XDG_CACHE_HOME": str(CACHE_HOME),
+        "${XDG_CACHE_HOME}": str(CACHE_HOME),
     }
     for token, actual in xdg.items():
         if raw == token or raw.startswith(token + "/"):
             raw = actual + raw[len(token):]
             break
+    raw = os.path.expanduser(os.path.expandvars(raw))
     path = Path(raw)
     if not path.is_absolute():
         path = CONFIG_HOME / "quickshell" / path
     resolved = path.resolve(strict=False)
-    if not resolved.is_relative_to(HOME):
+    allowed_roots = (HOME, CONFIG_HOME, DATA_HOME, STATE_HOME, CACHE_HOME)
+    if not any(resolved.is_relative_to(root) for root in allowed_roots):
         raise TemplateError(f"Output path must resolve inside your home directory: {raw}")
     # Refuse to follow a final symlink to an external or unexpected target.
     if path.is_symlink():
@@ -783,7 +801,7 @@ def token_color(role: str, colors: dict[str, Any]) -> str:
         "terminal_bright_cyan": ("terminal_color14", "accent"),
         "terminal_bright_white": ("terminal_color15", "fg"),
         "terminal_selection_fg": ("terminal_foreground", "fg"),
-        "terminal_selection_bg": ("primary", "bgAccent"),
+        "terminal_selection_bg": ("terminal_selection_bg", "bgAccent"),
         "terminal_cursor_text": ("fg", "on_primary"),
         "terminal_cursor": ("terminal_cursor", "accent"), "terminal_color0": ("terminal_color0", "bg"),
         "terminal_color1": ("terminal_color1", "error"), "terminal_color2": ("terminal_color2", "tertiary"),
@@ -797,11 +815,12 @@ def token_color(role: str, colors: dict[str, Any]) -> str:
     }
     choices = aliases.get(role, (role, "accent"))
     for key in choices:
-        if key in colors:
-            try:
-                return color_hex(colors[key])
-            except TemplateError:
-                continue
+        for candidate in (key, "m3_" + key):
+            if candidate in colors:
+                try:
+                    return color_hex(colors[candidate])
+                except TemplateError:
+                    continue
     return color_hex(colors.get("accent", "#a77ef5"))
 
 
@@ -984,6 +1003,8 @@ def atomic_write(path: Path, data: bytes, *, durable: bool = True) -> None:
 
 
 def apply_enabled(home: str, colors: dict[str, Any]) -> None:
+    _bind_home(home)
+    live_session = is_live_session(HOME)
     for folder in iter_template_folders():
         meta = read_json(folder / "template.json")
         if not isinstance(meta, dict):
@@ -995,19 +1016,14 @@ def apply_enabled(home: str, colors: dict[str, Any]) -> None:
                 continue
             outputs = prepare_render(meta, folder, colors)
             backups = state.setdefault("backups", {})
-            # Check all backup conflicts before touching any target.
+            # Save each original once (or adopt an existing pre-Veyra .veyra-backup
+            # if local state was cleared), recording it immediately.
             for target, _content in outputs:
                 key = str(target)
                 if target.exists() and key not in backups:
                     backup = target.with_name(target.name + ".veyra-backup")
-                    if backup.exists():
-                        raise TemplateError(f"Backup already exists and is not tracked; refusing to overwrite {target}. Review {backup} first.")
-            # Save each original once, recording it immediately so a restart cannot lose ownership data.
-            for target, _content in outputs:
-                key = str(target)
-                if target.exists() and key not in backups:
-                    backup = target.with_name(target.name + ".veyra-backup")
-                    shutil.copy2(target, backup)
+                    if not backup.exists():
+                        shutil.copy2(target, backup)
                     backups[key] = str(backup)
                     save_template_state(str(meta.get("id", folder.name)), state)
             updated_count = 0
@@ -1045,7 +1061,7 @@ def apply_enabled(home: str, colors: dict[str, Any]) -> None:
                 target.resolve() == foot_theme_path and target.resolve() in changed_paths
                 for target, _content in outputs
             )
-            if foot_theme_content is not None and foot_theme_changed:
+            if live_session and foot_theme_content is not None and foot_theme_changed:
                 try:
                     import configparser
                     import os
@@ -1166,11 +1182,6 @@ def apply_enabled(home: str, colors: dict[str, Any]) -> None:
                         emit(
                             "Veyra: wrote Foot's theme file, but live color push failed: "
                             + "; ".join(failures[:3]),
-                            True,
-                        )
-                    else:
-                        emit(
-                            "Veyra: wrote Foot's theme file, but no running Foot terminal TTY was found.",
                             True,
                         )
                 except Exception as exc:

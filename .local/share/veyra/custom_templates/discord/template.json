@@ -3,6 +3,7 @@
   "name": "Discord / Vesktop",
   "origin": "local:veyra-discord",
   "kind": "noctalia",
+  "default_enabled": true,
   "entries": [
     {
       "name": "discord",

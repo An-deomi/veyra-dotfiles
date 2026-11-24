@@ -15,10 +15,20 @@ Rectangle {
     property int iconSize: Constants.sizeLg
     property bool isCircle: false
     property bool useOriginalColors: false
+    property bool useShippedFallback: false
     readonly property int scaledIconSize: Math.round(iconSize * SettingsService.fontScale)
     readonly property int status: iconImage.status
 
     signal clicked(var mouse)
+
+    onIconChanged: useShippedFallback = false
+
+    Connections {
+        target: Theme
+        function onThemeApplied() {
+            root.useShippedFallback = false;
+        }
+    }
 
     color: root.bgColor
     implicitWidth: flat ? scaledIconSize : scaledIconSize + Constants.sizeLg
@@ -37,13 +47,14 @@ Rectangle {
                 return root.icon;
 
             // Prefer wallpaper-colored copies written by the theme engine;
-            // fall back to the pristine shipped defaults on error.
-            return "file://" + XdgPaths.dataDir + "/assets/" + root.icon + ".svg";
+            // fall back declaratively to shipped defaults without breaking bindings.
+            const baseDir = root.useShippedFallback ? Quickshell.shellDir : XdgPaths.dataDir;
+            return "file://" + baseDir + "/assets/" + root.icon + ".svg";
         }
         onStatusChanged: {
-            if (status === Image.Error && String(source).indexOf("/assets/") !== -1
-                    && String(source).indexOf(Quickshell.shellDir) === -1) {
-                source = `${Quickshell.shellDir}/assets/${root.icon}.svg`;
+            if (status === Image.Error && !root.useShippedFallback && root.icon !== ""
+                    && !root.icon.startsWith("image://") && !root.icon.startsWith("file://") && !root.icon.startsWith("/")) {
+                root.useShippedFallback = true;
             }
         }
         width: root.scaledIconSize

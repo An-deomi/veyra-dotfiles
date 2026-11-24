@@ -19,7 +19,7 @@ error_symbol = "[❯](bold red)"
 
 # --- Quickshell Palette ---
 [palettes.quickshell]
-bg = "#090a0b"
-fg = "#f0f2f3"
-accent = "#65bdcc"
-accentcomplementary = "#646fcc"
+bg = "#080a0b"
+fg = "#f0f2f4"
+accent = "#65b2cc"
+accentcomplementary = "#6564cc"

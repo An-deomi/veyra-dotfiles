@@ -1,18 +1,36 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Parse enabled layouts from settings
+# Parse enabled layouts from Veyra settings (prefer XDG state dir, fall back to legacy cache)
+STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
-PREFS_FILE="$CACHE_HOME/quickshell/settings_prefs.json"
-LAYOUTS_STR=$(jq -r '.enabledKbLayouts | join(" ")' "$PREFS_FILE" 2>/dev/null)
+PREFS_FILE="$STATE_HOME/veyra/settings_prefs.json"
+if [ ! -f "$PREFS_FILE" ]; then
+  PREFS_FILE="$CACHE_HOME/quickshell/settings_prefs.json"
+fi
 
-if [ -z "$LAYOUTS_STR" ] || [ "$LAYOUTS_STR" == "null" ]; then
+LAYOUTS_STR=""
+if command -v jq >/dev/null 2>&1 && [ -f "$PREFS_FILE" ]; then
+  LAYOUTS_STR=$(jq -r '.enabledKbLayouts | if type == "array" then join(" ") else empty end' "$PREFS_FILE" 2>/dev/null)
+fi
+
+if [ -z "$LAYOUTS_STR" ] || [ "$LAYOUTS_STR" = "null" ]; then
   LAYOUTS_STR="us latam" # Fallback
 fi
 
-read -a LAYOUTS <<<"$LAYOUTS_STR"
+read -r -a LAYOUTS <<<"$LAYOUTS_STR"
+if [ "${#LAYOUTS[@]}" -eq 0 ]; then
+  LAYOUTS=("us")
+fi
+
+if ! command -v hyprctl >/dev/null 2>&1; then
+  exit 0
+fi
 
 # Get current layout from hyprland
-CURRENT_LAYOUT=$(hyprctl getoption input:kb_layout -j 2>/dev/null | jq -r '.str // empty' 2>/dev/null | xargs)
+CURRENT_LAYOUT=""
+if command -v jq >/dev/null 2>&1; then
+  CURRENT_LAYOUT=$(hyprctl getoption input:kb_layout -j 2>/dev/null | jq -r '.str // empty' 2>/dev/null | xargs)
+fi
 
 # Find index of current layout in the array
 IDX=-1

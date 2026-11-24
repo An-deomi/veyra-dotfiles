@@ -1,10 +1,10 @@
 import os
-
-from xdg_paths import config_home, data_home
 import re
+import shutil
 import subprocess
 
 from color_utils import sanitize_color
+from xdg_paths import config_home, data_home, is_live_session
 
 
 def apply(home, colors):
@@ -395,22 +395,25 @@ def apply(home, colors):
             with open(gtk4_ini, "w", encoding="utf-8") as f:
                 f.write(updated)
 
+    live_session = is_live_session(home)
+
     # Sync GNOME-compatible theme settings and dark/light preference.
-    subprocess.run(
-        ["gsettings", "set", "org.gnome.desktop.interface",
-         "gtk-theme", gtk_theme],
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-    )
-    subprocess.run(
-        ["gsettings", "set", "org.gnome.desktop.interface",
-         "color-scheme", opposite_scheme],
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-    )
-    subprocess.run(
-        ["gsettings", "set", "org.gnome.desktop.interface",
-         "color-scheme", color_scheme],
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-    )
+    if live_session and shutil.which("gsettings"):
+        for key, val in (
+            ("gtk-theme", gtk_theme),
+            ("color-scheme", opposite_scheme),
+            ("color-scheme", color_scheme),
+        ):
+            try:
+                subprocess.run(
+                    ["gsettings", "set", "org.gnome.desktop.interface", key, val],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    timeout=4,
+                    check=False,
+                )
+            except (OSError, subprocess.SubprocessError):
+                break
 
     xsettings = os.path.join(str(config_home(home)), "xsettingsd", "xsettingsd.conf")
     if os.path.isfile(xsettings):
@@ -425,7 +428,14 @@ def apply(home, colors):
         if count:
             with open(xsettings, "w", encoding="utf-8") as f:
                 f.write(updated)
-            subprocess.run(
-                ["killall", "-HUP", "xsettingsd"],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-            )
+            if live_session and shutil.which("pkill"):
+                try:
+                    subprocess.run(
+                        ["pkill", "-HUP", "-x", "xsettingsd"],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        timeout=3,
+                        check=False,
+                    )
+                except (OSError, subprocess.SubprocessError):
+                    pass

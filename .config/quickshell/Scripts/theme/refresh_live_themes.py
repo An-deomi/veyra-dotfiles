@@ -10,7 +10,10 @@ import argparse
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
+
+sys.dont_write_bytecode = True
 
 from xdg_paths import config_home
 
